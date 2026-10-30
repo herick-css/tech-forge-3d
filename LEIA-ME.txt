@@ -1,0 +1,271 @@
+TECHFORGE 3D — LABORATÓRIO INTERATIVO DE HARDWARE
+Projeto educacional para prática simulada de montagem e manutenção de computadores
+
+Responsável: Prof. Carlos Eduardo Pereira da Silva
+Instituição: SENAC
+Área: Tecnologia da Informação / Informação e Comunicação
+
+============================================================
+1. SOBRE O PROJETO
+============================================================
+
+O TechForge 3D é um jogo educacional criado para aproximar o estudante de situações que fazem parte da rotina de montagem e manutenção de computadores.
+
+A proposta não é funcionar como um quebra-cabeça de “encaixar peças”. O estudante entra em um laboratório virtual, recebe uma Ordem de Serviço, escolhe a bancada, identifica ferramentas e componentes, executa procedimentos, recebe orientações do docente virtual e reflete sobre as decisões tomadas.
+
+O jogo trabalha principalmente o ciclo:
+
+OBSERVAR → ANALISAR → DECIDIR → EXECUTAR → VERIFICAR → REFLETIR
+
+A intenção é que a simulação prepare o estudante para a prática física na bancada, sem substituir a atividade real supervisionada pelo docente.
+
+============================================================
+2. O QUE EXISTE NESTA PASTA
+============================================================
+
+index.html
+É o jogo propriamente dito. Nele estão a interface, a lógica pedagógica, o ambiente 3D e as interações do TechForge.
+
+INICIAR_JOGO.bat
+É o arquivo utilizado para iniciar o jogo com mais facilidade no Windows durante o desenvolvimento e os testes locais.
+
+server.js
+É um pequeno servidor local em Node.js. Ele disponibiliza o jogo no próprio computador para que o navegador consiga executar corretamente os recursos JavaScript e o ambiente 3D.
+
+VERIFICAR_NODE.bat
+Serve apenas para conferir se o Node.js está instalado e reconhecido pelo Windows.
+
+LEIA-ME.txt
+É este documento.
+
+============================================================
+3. POR QUE O JOGO USA UM ARQUIVO .BAT?
+============================================================
+
+O arquivo .BAT não faz parte do jogo final e não será utilizado quando o TechForge for publicado no Canva Code.
+
+Ele existe somente para facilitar os testes no computador durante o desenvolvimento.
+
+O TechForge usa JavaScript moderno e Three.js para criar o ambiente 3D. Navegadores atuais possuem regras de segurança que podem impedir alguns recursos de funcionar corretamente quando um arquivo HTML é aberto diretamente por duplo clique, usando o endereço file://.
+
+Por isso utilizamos um pequeno servidor local.
+
+Quando você executa INICIAR_JOGO.bat, ele basicamente faz três coisas:
+
+1. verifica se o Node.js está disponível;
+2. inicia o arquivo server.js;
+3. abre o navegador em um endereço local, por exemplo:
+
+http://127.0.0.1:8088
+
+Esse endereço existe somente no seu computador. Nenhuma informação é publicada na internet por causa disso.
+
+Se a porta 8088 já estiver sendo usada, o servidor pode escolher outra porta, como 8089, 8090 e assim por diante.
+
+Enquanto o jogo estiver aberto localmente, mantenha a janela preta do servidor aberta. Ao fechar essa janela, o servidor local é encerrado.
+
+============================================================
+4. COMO EXECUTAR O TECHFORGE NO COMPUTADOR
+============================================================
+
+1. Extraia todo o arquivo ZIP para uma pasta do computador.
+
+2. Não execute o jogo diretamente de dentro do arquivo ZIP.
+
+3. Entre na pasta extraída.
+
+4. Dê dois cliques em:
+
+INICIAR_JOGO.bat
+
+5. Uma janela preta será aberta mostrando o funcionamento do servidor.
+
+6. O navegador deve abrir automaticamente com o TechForge.
+
+7. Mantenha a janela do servidor aberta enquanto estiver usando o jogo.
+
+Caso o navegador não abra automaticamente, observe o endereço mostrado na janela do servidor e copie para o navegador. Exemplo:
+
+http://127.0.0.1:8089
+
+============================================================
+5. PRECISO DO .BAT E DO NODE.JS NO CANVA?
+============================================================
+
+Não.
+
+O .BAT, o server.js e o Node.js são ferramentas usadas apenas nesta etapa de desenvolvimento e teste local.
+
+Eles permitem que o jogo seja testado de forma segura no computador antes de ser publicado.
+
+Quando o projeto estiver pronto para o Canva Code, será criada uma versão específica para ambiente web. Nessa versão, o Canva será responsável por executar e publicar o código.
+
+Em outras palavras:
+
+VERSÃO DE DESENVOLVIMENTO NO WINDOWS
+index.html + server.js + INICIAR_JOGO.bat + Node.js
+
+VERSÃO PARA CANVA CODE
+arquivo HTML/código preparado para Web, sem .BAT e sem servidor local do Windows
+
+============================================================
+6. O TECHFORGE PODE SER LEVADO PARA O CANVA CODE?
+============================================================
+
+Sim.
+
+O Canva Code atualmente permite iniciar um projeto enviando um arquivo HTML ou outro arquivo de código. Depois disso, o projeto pode ser refinado dentro do próprio Canva Code, testado em Pré-visualização e publicado como site.
+
+Porém, não devemos simplesmente enviar o ZIP inteiro esperando que o Canva execute o INICIAR_JOGO.bat.
+
+O Canva Code não precisa desse arquivo.
+
+Quando o TechForge estiver considerado estável, será feita uma etapa final de preparação chamada aqui de “versão Canva”.
+
+Nessa etapa iremos:
+
+- manter apenas o código necessário para o jogo;
+- remover referências a localhost, .BAT e servidor Node local;
+- revisar o carregamento das bibliotecas JavaScript;
+- verificar se todos os recursos usados pelo jogo podem ser acessados no ambiente Web;
+- reduzir dependências desnecessárias;
+- testar responsividade;
+- testar teclado, mouse e toque;
+- testar áudio e acessibilidade;
+- confirmar que o Three.js continua funcionando;
+- revisar o tamanho e a complexidade do projeto para evitar problemas de publicação no Canva.
+
+============================================================
+7. COMO O JOGO DEVERÁ SER PASSADO PARA O CANVA CODE
+============================================================
+
+Quando chegarmos à versão final, o processo recomendado será este:
+
+PASSO 1 — FINALIZAR O JOGO FORA DO CANVA
+
+Primeiro terminamos e testamos:
+
+- cenário;
+- personagens;
+- movimentação;
+- câmeras;
+- ferramentas;
+- componentes;
+- Desktop;
+- Notebook;
+- Ordens de Serviço;
+- feedback pedagógico;
+- acessibilidade;
+- sons;
+- relatórios, se utilizados.
+
+O objetivo é evitar que uma versão ainda instável seja enviada ao Canva e depois precise ser reconstruída várias vezes.
+
+PASSO 2 — GERAR A VERSÃO CANVA
+
+Será criada uma cópia específica do TechForge, por exemplo:
+
+TECHFORGE_CANVA.html
+
+Essa cópia não utilizará INICIAR_JOGO.bat nem server.js.
+
+PASSO 3 — ABRIR O CANVA CODE
+
+No Canva, abra o recurso Code/Canva Code.
+
+PASSO 4 — ENVIAR O ARQUIVO
+
+Envie o arquivo HTML/código preparado para o Canva Code.
+
+Não envie como parte principal:
+
+- INICIAR_JOGO.bat;
+- VERIFICAR_NODE.bat;
+- server.js;
+- arquivos de teste do servidor.
+
+Esses arquivos pertencem somente ao ambiente local de desenvolvimento.
+
+PASSO 5 — ORIENTAR O CANVA CODE
+
+Ao enviar o arquivo, podemos usar uma orientação semelhante a esta:
+
+“Este arquivo contém o jogo educacional TechForge 3D. Preserve a lógica JavaScript, as interações, o ambiente Three.js, as Ordens de Serviço, os controles de acessibilidade e a identidade visual do SENAC. Não transforme o projeto em uma página estática. Adapte apenas o que for necessário para funcionar corretamente dentro do Canva Code e como site publicado. Não remova as mecânicas do jogo nem simplifique os procedimentos pedagógicos sem necessidade.”
+
+PASSO 6 — TESTAR NA PRÉ-VISUALIZAÇÃO
+
+Antes de publicar, testar novamente:
+
+- entrada do estudante;
+- movimentação;
+- interação com Prof. Carlos;
+- armário de ferramentas;
+- armário de componentes;
+- montagem Desktop;
+- manutenção Notebook;
+- animações;
+- som;
+- dispositivos móveis;
+- acessibilidade.
+
+PASSO 7 — PUBLICAR
+
+Quando tudo estiver funcionando, utilizar a opção Publicar do Canva Code.
+
+O Canva cria o endereço do site e permite atualizar a mesma publicação conforme o código é refinado.
+
+============================================================
+8. OBSERVAÇÃO IMPORTANTE SOBRE O CANVA CODE
+============================================================
+
+O TechForge é um projeto mais complexo que uma calculadora, formulário ou página comum.
+
+Por isso, ao chegar no Canva Code, talvez seja necessário adaptar alguns recursos para o ambiente de publicação do Canva.
+
+Isso não significa reconstruir o projeto do zero.
+
+A estratégia será preservar a lógica e a experiência pedagógica do jogo, alterando somente o que for necessário para compatibilidade e desempenho.
+
+Também é importante manter o projeto organizado. O próprio Canva alerta que projetos muito grandes ou complexos podem apresentar dificuldade de publicação. Por esse motivo, a versão final deverá ser revisada e otimizada antes do envio.
+
+============================================================
+9. O QUE NÃO DEVEMOS FAZER
+============================================================
+
+Não enviar o jogo ao Canva em uma fase em que ainda existam erros importantes.
+
+Não depender do arquivo .BAT para a versão publicada.
+
+Não colocar endereços como http://127.0.0.1 ou localhost dentro da versão final do Canva.
+
+Não transformar o jogo em uma simples página com botões e textos.
+
+Não remover o Three.js ou as interações sem avaliar o impacto pedagógico.
+
+Não perder o objetivo principal do projeto: aproximar o estudante do fazer profissional.
+
+============================================================
+10. RESUMO
+============================================================
+
+Durante o desenvolvimento no computador:
+
+Use INICIAR_JOGO.bat.
+
+Para testar localmente:
+
+O .BAT inicia o Node.js e o servidor local.
+
+Quando o jogo estiver finalizado:
+
+Será preparada uma versão específica para Canva Code.
+
+No Canva:
+
+Será enviado o HTML/código preparado, e não o .BAT.
+
+Depois:
+
+Pré-visualizar → testar → ajustar → publicar.
+
+O objetivo é que o TechForge termine como um jogo educacional Web interativo, acessível e alinhado às práticas profissionais dos cursos de Tecnologia da Informação do SENAC.

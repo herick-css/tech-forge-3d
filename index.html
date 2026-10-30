@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechForge 3D • SENAC — Laboratório Profissional</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js"
+  }
+}
+</script>
+<style>
+:root{
+  --blue:#006bb6;--blue2:#004b80;--orange:#f7941d;
+  --bg:#edf3f6;--card:#fff;--ink:#17364a;--muted:#637b8b;
+  --line:#d2e0e8;--ok:#1d7d4f;--bad:#b42318;--focus:#ffd34f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid var(--focus);outline-offset:2px}
+header{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;padding:12px 18px}
+.header{max-width:1380px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header h1{margin:0;font-size:22px}.header p{margin:3px 0 0;font-size:12px;opacity:.92}
+.pill{background:#fff;color:var(--blue2);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900}
+main{max-width:1380px;margin:auto;padding:10px}
+.hud{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:9px}
+.hud b{display:block;color:var(--blue2);font-size:13px}.hud small{display:block;color:var(--muted);margin-top:2px;font-size:11px}
+.chip{background:#eef6fb;border:1px solid #c8dbe7;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:900}
+#gameShell{position:relative;min-height:690px;height:690px;background:#0d2536;border-radius:18px;overflow:hidden;border:1px solid #aec3cf}
+#world{width:100%;height:100%}
+#world canvas{display:block;width:100%;height:100%}
+#loader{
+  position:absolute;inset:0;z-index:50;display:grid;place-items:center;
+  background:linear-gradient(135deg,#063b63,#0b6aa8);color:white;
+}
+.loader-card{width:min(420px,88%);text-align:center}
+.loader-card h2{margin:0 0 8px;font-size:27px}.loader-card p{font-size:12px;opacity:.9;line-height:1.5}
+.loader-bar{height:9px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin:14px 0}.loader-bar span{display:block;height:100%;width:0;background:#f7941d;transition:width .35s}
+.loader-card button{display:none;border:0;border-radius:11px;background:#f7941d;color:#fff;padding:11px 16px;font-weight:900}
+#fallback{
+  display:none;position:absolute;inset:0;z-index:45;padding:30px;background:#0f2c3e;color:white;text-align:center;
+}
+#prompt{
+  position:absolute;left:50%;bottom:24px;transform:translateX(-50%);
+  z-index:12;display:none;background:rgba(255,255,255,.96);border:1px solid var(--line);
+  border-radius:999px;padding:9px 14px;font-size:11px;font-weight:900;box-shadow:0 10px 24px rgba(0,0,0,.18)
+}
+.task{
+  position:absolute;top:14px;right:14px;z-index:10;width:min(300px,31%);
+  background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 14px 28px rgba(0,0,0,.15)
+}
+.task>p{margin:0 0 8px;color:var(--muted);font-size:11px;line-height:1.4}
+.stepbox{border-left:4px solid var(--orange);background:#fff7ec;border-radius:9px;padding:9px}
+.stepbox span{font-size:9px;font-weight:900;color:#8e5a16;text-transform:uppercase}.stepbox strong{display:block;margin-top:3px;color:#70440b;font-size:12px}.stepbox p{margin:4px 0 0;font-size:10px;color:#705b41;line-height:1.35}
+.progress{height:8px;background:#dbe6ec;border-radius:999px;overflow:hidden;margin-top:9px}.progress span{display:block;width:0;height:100%;background:var(--orange)}
+.stats{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted);margin-top:8px}
+.dialog{
+  position:absolute;left:16px;right:16px;bottom:16px;z-index:30;display:none;
+  grid-template-columns:58px 1fr auto;gap:12px;align-items:center;background:rgba(255,255,255,.98);
+  border:1px solid var(--line);border-left:6px solid var(--orange);border-radius:14px;padding:12px;
+  box-shadow:0 16px 34px rgba(0,0,0,.24)
+}
+.dialog.show{display:grid}.avatar{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,var(--blue),var(--blue2));color:#fff;font-size:20px;font-weight:900}
+.dialog strong{color:var(--blue2);font-size:12px}.dialog p{margin:4px 0 0;color:#425f72;font-size:12px;line-height:1.45}
+.dialog-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.dialog-actions button{border:0;border-radius:10px;background:var(--blue);color:#fff;padding:9px 11px;min-height:40px;font-size:11px;font-weight:900}.dialog-actions button.alt{background:var(--orange)}
+.inspect{
+  position:absolute;left:14px;top:14px;z-index:25;display:none;width:300px;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:14px;padding:13px;box-shadow:0 14px 30px rgba(0,0,0,.2)
+}
+.inspect.show{display:block}.inspect h3{margin:0 28px 6px 0;color:var(--blue2);font-size:15px}.inspect p,.inspect li{font-size:11px;line-height:1.45;color:#455f71}.inspect ul{padding-left:18px;margin:8px 0 0}.inspect .close{position:absolute;right:8px;top:8px;width:30px;height:30px;border:0;border-radius:50%;background:#edf3f7}
+.mobile-pad,.mobile-e{display:none}
+.high-contrast{--bg:#000;--card:#111;--ink:#fff;--muted:#ddd;--line:#777}.high-contrast .task,.high-contrast .dialog,.high-contrast .inspect,.high-contrast .hud{background:#111;color:#fff}.high-contrast .stepbox{background:#222}
+.large-text{font-size:116%}.reduce-motion *{animation:none!important;transition:none!important}
+
+.context-box{position:absolute;left:14px;top:14px;z-index:11;width:min(350px,30%);background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 14px 30px rgba(0,0,0,.16)}
+.context-box h3{margin:0;color:var(--blue2);font-size:14px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.panel-toggle{border:0;background:#eef5f9;color:#24506b;border-radius:8px;padding:5px 8px;font-size:10px;font-weight:900}.context-box.collapsed p,.context-box.collapsed .context-grid,.task.collapsed>p,.task.collapsed .stepbox,.task.collapsed .progress,.task.collapsed .stats,.task.collapsed .task-extra{display:none}.context-box.collapsed,.task.collapsed{width:auto;max-width:300px}.task h2{margin:0;color:var(--blue2);font-size:14px}
+.context-box p{margin:0 0 8px;color:#496477;font-size:11px;line-height:1.5}
+.context-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.context-mini{background:#f6fafc;border:1px solid #dbe7ee;border-radius:11px;padding:8px}
+.context-mini b{display:block;color:#004b80;font-size:10px;margin-bottom:4px}
+.context-mini span{display:block;color:#607789;font-size:10px;line-height:1.4}
+.selection-modal{position:absolute;inset:0;z-index:35;display:none;place-items:center;background:rgba(8,32,48,.52);padding:18px}
+.selection-modal.show{display:grid}
+.selection-card{width:min(860px,96%);background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.28);padding:18px}
+.selection-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap}
+.selection-head h3{margin:0;color:var(--blue2);font-size:18px}.selection-head p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.selection-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.selection-item{border:1px solid #d7e3eb;border-radius:14px;background:#fbfdff;padding:12px;text-align:left;min-height:116px;display:flex;flex-direction:column;gap:6px}
+.selection-item:hover{border-color:#99b7c8;transform:translateY(-1px)}
+.selection-item strong{font-size:13px;color:#17364a}.selection-item span{font-size:11px;color:#607789;line-height:1.4}.selection-tag{display:inline-block;align-self:flex-start;background:#eef6fb;color:#005b9c;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900}
+.selection-footer{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.selection-help{font-size:11px;color:#607789;line-height:1.45}
+.selection-actions{display:flex;gap:8px;flex-wrap:wrap}.ghost-btn,.primary-btn{border:0;border-radius:10px;min-height:42px;padding:10px 14px;font-weight:900}.ghost-btn{background:#eef4f8;color:#23435a}.primary-btn{background:var(--orange);color:white}
+.selection-card{background:linear-gradient(180deg,#ffffff,#f7fbfe);border-color:#cfe0e9}
+.selection-item{position:relative;overflow:hidden;border:1px solid #d2e1ea;border-radius:16px;background:linear-gradient(180deg,#ffffff,#f3f8fb);box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 8px 18px rgba(13,37,54,.06)}
+.selection-item:before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:linear-gradient(90deg,#f4c376,#f7941d)}
+.selection-icon{width:92px;height:72px;border-radius:14px;background:linear-gradient(180deg,#eef7fb,#e6f0f5);border:1px solid #d0e0e9;display:grid;place-items:center;margin-top:8px;overflow:hidden}.selection-icon svg{width:78px;height:58px;display:block}.selection-item{align-items:center;text-align:center}.selection-item strong{font-size:12px}.selection-item .inv-desc{font-size:10px;line-height:1.35;color:#607789}.selection-item .inv-check{font-size:9px;line-height:1.25;color:#7890a0}.selection-tag{align-self:center}
+.inventory-preview{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);z-index:15;display:none;min-width:320px;max-width:min(92%,520px);background:rgba(255,255,255,.97);border:1px solid #d3e1ea;border-radius:16px;padding:12px;box-shadow:0 16px 34px rgba(0,0,0,.2)}
+.inventory-preview.show{display:block}
+.inventory-title{font-size:12px;font-weight:900;color:#004b80;margin-bottom:8px}
+.inventory-mini-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.inventory-mini-item{background:#f7fbfe;border:1px solid #dbe8ef;border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.inventory-mini-item .icon{width:58px;height:46px;border-radius:10px;background:#eaf4fb;border:1px solid #d2e2ec;display:grid;place-items:center;overflow:hidden}.inventory-mini-item .icon svg{width:50px;height:38px;display:block}
+.inventory-mini-item span{font-size:9px;color:#5b7384;line-height:1.25}
+.inventory-mini-hint{margin-top:8px;font-size:10px;color:#607789;line-height:1.4}
+.scene-modal{position:absolute;inset:0;z-index:36;display:none;place-items:center;background:rgba(9,30,44,.55);padding:18px}.scene-modal.show{display:grid}.scene-card{width:min(980px,96%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.30);overflow:hidden}.scene-hero{display:grid;grid-template-columns:1.2fr .9fr;gap:0;background:linear-gradient(135deg,#f6fbff,#eef5fa)}.scene-copy{padding:22px 22px 16px}.scene-copy h3{margin:0;color:var(--blue2);font-size:24px}.scene-copy p{margin:8px 0 0;color:#4f6778;font-size:13px;line-height:1.6}.scene-copy .badge{display:inline-block;background:#fff4df;color:#8a570d;border:1px solid #f3cf8e;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;margin-bottom:10px}.scene-points{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.scene-point{background:#fff;border:1px solid #dfeaf0;border-radius:14px;padding:12px}.scene-point strong{display:block;color:#005188;font-size:12px;margin-bottom:4px}.scene-point span{display:block;color:#61788b;font-size:11px;line-height:1.45}.scene-visual{position:relative;padding:18px;display:grid;place-items:center;min-height:270px;background:radial-gradient(circle at 30% 20%,#d9eefb 0,#f5fbff 42%,#eaf2f8 100%)}.scene-lab{position:relative;width:320px;height:210px}.scene-wall{position:absolute;left:18px;right:18px;top:16px;height:110px;background:#8da8b7;border:6px solid #a7c0cd;border-bottom:0;border-radius:12px 12px 0 0}.scene-board{position:absolute;left:76px;top:0;width:168px;height:46px;background:white;border:1px solid #d7e6ef;border-radius:8px;color:#0070bd;font-size:14px;font-weight:900;display:grid;place-items:center;text-align:center;padding:4px 8px}.scene-table{position:absolute;bottom:28px;width:112px;height:20px;background:#926342;border-radius:4px}.scene-table:before,.scene-table:after{content:'';position:absolute;bottom:-28px;width:10px;height:28px;background:#5c4637}.scene-table:before{left:16px}.scene-table:after{right:16px}.scene-table.left{left:18px}.scene-table.right{right:18px}.scene-pc{position:absolute;left:48px;bottom:48px;width:62px;height:88px;background:#223b4f;border-radius:10px}.scene-pc:before{content:'';position:absolute;right:-68px;top:16px;width:74px;height:48px;background:#173b55;border:6px solid #32566d;border-radius:10px}.scene-pc:after{content:'';position:absolute;right:-37px;top:66px;width:12px;height:24px;background:#546d7d;border-radius:0 0 6px 6px}.scene-nb{position:absolute;right:36px;bottom:52px;width:110px;height:14px;background:#647b8a;border-radius:6px}.scene-nb:before{content:'';position:absolute;left:8px;bottom:8px;width:94px;height:58px;background:#153b54;border:8px solid #6e8798;border-bottom-width:12px;border-radius:10px 10px 2px 2px;transform:skewX(-10deg)}.scene-tools{position:absolute;left:122px;bottom:44px;width:76px;height:18px;background:#607888;border-radius:6px;box-shadow:0 -18px 0 0 #607888}.scene-chip{position:absolute;right:18px;bottom:16px;background:#e8f7ee;color:#1d7d4f;border:1px solid #bde2ca;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900}.scene-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 18px;border-top:1px solid #e3edf3;flex-wrap:wrap}.scene-footer p{margin:0;color:#607789;font-size:11px;line-height:1.45;max-width:540px}.scene-actions{display:flex;gap:8px;flex-wrap:wrap}.scene-actions button{border:0;border-radius:11px;min-height:42px;padding:10px 14px;font-weight:900}.scene-actions .scene-cancel{background:#eef4f8;color:#26445c}.scene-actions .scene-ok{background:var(--orange);color:#fff}
+@media(max-width:900px){.context-box{width:42%}.selection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.inventory-preview{bottom:88px;min-width:280px}}
+@media(max-width:600px){.context-box{position:absolute;width:calc(100% - 28px);top:auto;bottom:88px;left:14px}.selection-grid{grid-template-columns:1fr}.selection-card{padding:14px}.inventory-preview{max-width:calc(100% - 28px)}.inventory-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+@media(max-width:900px){
+  #gameShell{height:600px;min-height:600px}.task{top:8px;right:8px;width:40%}.dialog.show{grid-template-columns:50px 1fr}.dialog-actions{grid-column:1/-1}
+  .mobile-pad{display:grid;position:absolute;left:14px;bottom:18px;z-index:14;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;gap:4px}.mobile-pad button{border:0;border-radius:11px;background:rgba(255,255,255,.88);font-weight:900}.mobile-pad [data-dir=up]{grid-column:2}.mobile-pad [data-dir=left]{grid-column:1;grid-row:2}.mobile-pad [data-dir=down]{grid-column:2;grid-row:2}.mobile-pad [data-dir=right]{grid-column:3;grid-row:2}
+  .mobile-e{display:block;position:absolute;right:16px;bottom:22px;z-index:14;width:62px;height:62px;border:0;border-radius:50%;background:var(--orange);color:#fff;font-weight:900}
+}
+@media(max-width:600px){main{padding:6px}.hud{grid-template-columns:1fr 1fr}.hud>div:first-child{grid-column:1/-1}.task{width:48%}#gameShell{height:540px;min-height:540px}.inspect{width:calc(100% - 28px)}.scene-hero{grid-template-columns:1fr}.scene-copy h3{font-size:20px}.scene-points{grid-template-columns:1fr}.scene-visual{min-height:220px}.scene-lab{transform:scale(.92)}}
+
+/* refinamento visual v2 */
+.game-hud{grid-template-columns:minmax(0,1fr) auto auto auto;background:linear-gradient(135deg,#fff,#f4f9fc);border:1px solid #cbdce6;box-shadow:0 8px 22px rgba(18,62,89,.08);padding:9px 11px}
+.hud-objective{border-left:4px solid var(--orange);padding-left:10px;min-width:0}.hud-kicker{display:block;font-size:8px;font-weight:900;letter-spacing:.11em;color:#7a8e9d;margin-bottom:2px}.hud-objective b{font-size:13px;color:#004b80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hud-objective small{font-size:10px;color:#667e8e}.hud-player{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid #d6e3eb;border-radius:12px;padding:6px 9px;max-width:180px}.hud-avatar{width:25px;height:25px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(145deg,#006bb6,#004b80);color:#fff;font-weight:900;font-size:11px}.hud-player #studentHud{font-size:10px;font-weight:900;color:#29495e;max-width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mode-chip{min-width:92px;text-align:center;background:#eef7ff}.hud-progress-wrap{min-width:76px;border-radius:12px;background:#07386a;color:#fff;padding:6px 9px;text-align:center}.hud-progress-wrap span{display:block;font-size:7px;letter-spacing:.1em;opacity:.72}.hud-progress-wrap strong{font-size:13px}
+.cinematic-overlay{position:absolute;inset:0;z-index:60;display:none;pointer-events:none}.cinematic-overlay.show{display:block}.cinematic-bar{position:absolute;left:0;right:0;height:11%;background:rgba(4,18,28,.92)}.cinematic-bar.top{top:0}.cinematic-bar.bottom{bottom:0}.cinematic-label{position:absolute;top:3.2%;left:50%;transform:translateX(-50%);color:#fff;font-size:10px;font-weight:900;letter-spacing:.15em;z-index:2}.cinematic-subtitle{position:absolute;left:50%;bottom:12.8%;transform:translateX(-50%);width:min(760px,88%);background:rgba(5,27,41,.88);border:1px solid rgba(255,255,255,.16);border-left:5px solid var(--orange);border-radius:12px;padding:12px 15px;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.26);z-index:3}.cinematic-subtitle strong{display:block;color:#ffbd62;font-size:12px;margin-bottom:4px}.cinematic-subtitle span{font-size:13px;line-height:1.5}.cinematic-skip{pointer-events:auto;position:absolute;right:18px;top:13%;z-index:4;border:1px solid rgba(255,255,255,.35);background:rgba(8,31,45,.72);color:#fff;border-radius:999px;padding:7px 11px;font-size:10px;font-weight:900}.pickup-toast{position:absolute;left:50%;top:18%;transform:translate(-50%,-8px) scale(.95);z-index:32;opacity:0;pointer-events:none;background:rgba(255,255,255,.97);border:1px solid #d5e4ed;border-left:5px solid var(--orange);border-radius:14px;padding:10px 14px;box-shadow:0 15px 32px rgba(0,0,0,.20);font-size:11px;font-weight:900;color:#17415b;transition:opacity .2s,transform .2s}.pickup-toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+#gameShell:after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.24),inset 0 -90px 130px rgba(9,42,61,.04)}
+@media(max-width:780px){.game-hud{grid-template-columns:1fr auto}.hud-player{display:none}.mode-chip{grid-column:2}.hud-progress-wrap{grid-column:2}.cinematic-subtitle span{font-size:11px}.cinematic-label{font-size:8px}}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="header">
+    <div><h1>TechForge 3D • SENAC</h1><p>Laboratório de Hardware • prática profissional simulada</p></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button id="contrastBtn" class="pill" type="button">Alto contraste</button>
+      <button id="textBtn" class="pill" type="button">Texto +</button>
+      <button id="motionBtn" class="pill" type="button">Reduzir movimento</button>
+      <button id="soundBtn" class="pill" type="button" aria-pressed="true">🔊 Som</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hud game-hud">
+    <div class="hud-objective">
+      <span class="hud-kicker">OBJETIVO ATUAL</span>
+      <b id="missionTitle">Missão: procure o Prof. Carlos.</b>
+      <small>WASD/setas: mover • E: interagir • F: inspecionar • H: contexto • O: ordem de serviço</small>
+    </div>
+    <div class="hud-player"><span class="hud-avatar">T</span><span id="studentHud">Estudante</span></div>
+    <div id="modeChip" class="chip mode-chip">Exploração</div>
+    <div class="hud-progress-wrap"><span>PROGRESSO</span><strong id="progressChip">0%</strong></div>
+  </section>
+
+  <section id="gameShell">
+    
+    <div id="introOverlay" style="
+      position:absolute;inset:0;z-index:80;display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(4,52,88,.96),rgba(0,107,182,.95));
+      padding:20px;">
+      <div style="width:min(720px,94%);background:white;border-radius:22px;padding:22px;
+                  box-shadow:0 24px 70px rgba(0,0,0,.3);color:#17364a">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <span style="display:inline-block;background:#fff4df;color:#8b5308;border:1px solid #f5c577;
+                         padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900">SENAC</span>
+            <h2 style="margin:10px 0 6px;color:#004b80">TechForge 3D — Missão de Laboratório</h2>
+          </div>
+          <span style="background:#eaf6ff;color:#005b9c;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900">
+            Informação e Comunicação
+          </span>
+        </div>
+
+        <p style="line-height:1.6;color:#4e6778;font-size:13px">
+          Você é estudante em formação técnica e chegou ao laboratório para cumprir uma Ordem de Serviço.
+          O docente <b>Prof. Carlos</b> irá orientar a prática, mas as decisões serão suas.
+          Sua missão é observar, planejar, escolher ferramentas, manipular componentes, montar, inspecionar e testar
+          um Desktop ou Notebook seguindo procedimentos técnicos e de segurança.
+        </p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0">
+          <div style="background:#f6fafc;border:1px solid #d8e5ec;border-radius:13px;padding:12px">
+            <b style="color:#004b80;font-size:12px">Objetivo da prática</b>
+            <p style="margin:5px 0 0;color:#607789;font-size:11px;line-height:1.45">
+              Planejar e executar procedimentos de manutenção e montagem de hardware, respeitando compatibilidade,
+              organização, segurança e verificação final.
+            </p>
+          </div>
+          <div style="background:#f6fafc;border:1px solid #d8e5ec;border-radius:13px;padding:12px">
+            <b style="color:#004b80;font-size:12px">Como jogar</b>
+            <p style="margin:5px 0 0;color:#607789;font-size:11px;line-height:1.45">
+              WASD/setas = caminhar • E = interagir • F = inspecionar item. No celular, use os controles na tela. Ao entrar, você irá diretamente para o laboratório.
+            </p>
+          </div>
+        </div>
+
+        <label for="studentName" style="display:block;font-size:12px;font-weight:900;color:#004b80;margin-bottom:6px">
+          Nome do estudante
+        </label>
+        <input id="studentName" type="text" maxlength="40" placeholder="Digite seu nome"
+               style="width:100%;min-height:46px;border:1px solid #b9cfdd;border-radius:11px;padding:10px 12px;
+                      font-size:16px;color:#17364a">
+
+        <div style="margin-top:12px;background:#eef8f2;border:1px solid #cce8d7;border-radius:12px;padding:10px">
+          <b style="font-size:11px;color:#176b43">Acessibilidade</b>
+          <p style="margin:4px 0 0;font-size:11px;line-height:1.45;color:#4f6c5d">
+            Você pode usar teclado ou toque, ativar alto contraste, aumentar textos e reduzir movimentos.
+            As instruções usam texto + posição + interação, não apenas cores.
+          </p>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:15px">
+          <button id="startExperienceBtn" type="button" class="btn orange"
+                  style="min-width:200px;background:#f7941d;color:#fff;border:0;border-radius:11px;padding:12px 18px;font-weight:900;cursor:pointer">Entrar no laboratório</button>
+        </div>
+        <div id="nameError" style="display:none;color:#b42318;font-size:11px;margin-top:8px">
+          Digite seu nome para iniciar a prática.
+        </div>
+      </div>
+    </div>
+
+    <div id="cinematicOverlay" class="cinematic-overlay" aria-hidden="true">
+      <div class="cinematic-bar top"></div>
+      <div class="cinematic-label">TECHFORGE • MISSÃO DE LABORATÓRIO</div>
+      <button id="cinematicSkip" type="button" class="cinematic-skip">Pular narração</button>
+      <div class="cinematic-subtitle"><strong>Prof. Carlos</strong><span id="cinematicText">Bem-vindo ao laboratório.</span></div>
+      <div class="cinematic-bar bottom"></div>
+    </div>
+    <div id="pickupToast" class="pickup-toast" aria-live="polite"></div>
+    <div id="world"></div>
+
+    <div id="loader">
+      <div class="loader-card">
+        <h2>TechForge 3D • SENAC</h2>
+        <p>Preparando o laboratório virtual...</p>
+        <div class="loader-bar"><span id="loaderBar"></span></div>
+        <p id="loaderText">Carregando Three.js e ambiente 3D</p>
+        <span id="loaderReady" style="display:none"></span>
+      </div>
+    </div>
+
+    <div id="fallback">
+      <h2>Preparando o ambiente 3D...</h2><p>Se esta mensagem permanecer por muito tempo, feche esta aba e abra novamente pelo <b>INICIAR_JOGO.bat</b>.</p>
+    </div>
+
+    <div id="prompt"></div>
+
+    <div id="inventoryPreview" class="inventory-preview" aria-hidden="true">
+      <div class="inventory-title">Armário próximo</div>
+      <div id="inventoryMiniGrid" class="inventory-mini-grid"></div>
+      <div id="inventoryMiniHint" class="inventory-mini-hint">Pressione E para abrir o inventário.</div>
+    </div>
+
+
+    <section class="context-box collapsed" id="contextBox">
+      <div class="panel-head"><h3>Contexto da aula e da prática</h3><button id="contextToggle" class="panel-toggle" type="button">Abrir</button></div>
+      <p id="contextText">Você está em um laboratório de hardware do SENAC. Nesta prática, o estudante observa o procedimento técnico, escolhe bancada, ferramentas e componentes, executa a montagem/manutenção e compara arquiteturas Desktop e Notebook.</p>
+      <div class="context-grid">
+        <div class="context-mini"><b>Objetivo</b><span>Interpretar a tarefa, selecionar itens, executar procedimentos e compreender compatibilidade, segurança e diagnóstico.</span></div>
+        <div class="context-mini"><b>Interação</b><span>WASD/setas para andar • E para interagir • F para inspecionar • use alto contraste e texto ampliado se necessário.</span></div>
+      </div>
+    </section>
+
+    <div id="selectionModal" class="selection-modal" aria-hidden="true">
+      <div class="selection-card">
+        <div class="selection-head">
+          <div>
+            <h3 id="selectionTitle">Selecionar item</h3>
+            <p id="selectionSubtitle">Escolha a ferramenta ou o componente adequado para a etapa atual.</p>
+          </div>
+          <button id="selectionClose" type="button" class="ghost-btn">Fechar</button>
+        </div>
+        <div id="selectionGrid" class="selection-grid"></div>
+        <div class="selection-footer">
+          <div id="selectionHelp" class="selection-help">As opções foram preparadas para facilitar a tomada de decisão do estudante no fazer profissional.</div>
+          <div class="selection-actions">
+            <button id="selectionCancel" type="button" class="ghost-btn">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="sceneModal" class="scene-modal" aria-hidden="true">
+      <div class="scene-card">
+        <div class="scene-hero">
+          <div class="scene-copy">
+            <span id="sceneBadge" class="badge">Cutscene pedagógica</span>
+            <h3 id="sceneTitle">Contexto da tarefa</h3>
+            <p id="sceneText">As cenas orientam o estudante no fluxo da prática profissional simulada.</p>
+            <div class="scene-points">
+              <div class="scene-point"><strong id="scenePoint1Title">Foco técnico</strong><span id="scenePoint1Text">Observe ferramentas, componentes, compatibilidade e segurança.</span></div>
+              <div class="scene-point"><strong id="scenePoint2Title">Ação do estudante</strong><span id="scenePoint2Text">Leia a instrução, escolha o item correto e execute a etapa na bancada.</span></div>
+            </div>
+          </div>
+          <div class="scene-visual">
+            <div class="scene-lab">
+              <div class="scene-wall"></div>
+              <div class="scene-board" id="sceneBoardLabel">SENAC<br>Laboratório de Manutenção</div>
+              <div class="scene-table left"></div>
+              <div class="scene-table right"></div>
+              <div class="scene-pc"></div>
+              <div class="scene-nb"></div>
+              <div class="scene-tools"></div>
+            </div>
+            <span class="scene-chip" id="sceneChip">Prática guiada</span>
+          </div>
+        </div>
+        <div class="scene-footer">
+          <p id="sceneFooterText">Use as orientações para relacionar a simulação ao fazer profissional no ambiente do SENAC.</p>
+          <div class="scene-actions">
+            <button id="sceneCancel" type="button" class="scene-cancel">Fechar</button>
+            <button id="sceneOk" type="button" class="scene-ok">Continuar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="task" id="taskPanel">
+      <div class="panel-head"><h2>Ordem de Serviço</h2><button id="taskToggle" class="panel-toggle" type="button">Minimizar</button></div>
+      <p id="workOrder">Procure Prof. Carlos para receber sua tarefa.</p>
+      <div class="stepbox">
+        <span>Etapa atual</span>
+        <strong id="stepTitle">Aguardando missão</strong>
+        <p id="stepDetail">—</p>
+      </div>
+      <div class="progress"><span id="progressBar"></span></div>
+      <div class="stats"><span>Erros: <b id="errorCount">0</b></span><span>Procedimentos: <b id="procedureCount">0</b></span></div>
+      <div class="task-extra" style="margin-top:9px;padding-top:8px;border-top:1px solid #dce6ec">
+        <b style="display:block;color:#004b80;font-size:10px;margin-bottom:4px">Áreas do laboratório</b>
+        <span style="display:block;color:#607789;font-size:9px;line-height:1.45">
+          Ferramentas • Componentes • Bancada Desktop • Bancada Notebook • Docente
+        </span>
+      </div>
+    </aside>
+
+    <div id="dialog" class="dialog">
+      <div class="avatar">C</div>
+      <div><strong id="dialogName">Prof. Carlos</strong><p id="dialogText"></p></div>
+      <div id="dialogActions" class="dialog-actions"></div>
+    </div>
+
+    <div id="inspectPanel" class="inspect">
+      <button id="closeInspect" class="close" type="button">×</button>
+      <h3 id="inspectTitle">Componente</h3>
+      <p id="inspectBody"></p>
+      <ul id="inspectList"></ul>
+    </div>
+
+    <div class="mobile-pad">
+      <button data-dir="up">▲</button><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button>
+    </div>
+    <button id="mobileE" class="mobile-e" type="button">E</button>
+  </section>
+</main>
+
+
+<script>
+window.TechForgeBoot = { started:false, name:'', ready:false };
+(function(){
+  const overlay=document.getElementById('introOverlay');
+  const input=document.getElementById('studentName');
+  const btn=document.getElementById('startExperienceBtn');
+  const err=document.getElementById('nameError');
+  const fallback=document.getElementById('fallback');
+  function start(){
+    const name=(input && input.value ? input.value : '').trim();
+    if(!name){ if(err) err.style.display='block'; if(input) input.focus(); return; }
+    if(err) err.style.display='none';
+    window.TechForgeBoot.started=true;
+    window.TechForgeBoot.name=name;
+    if(overlay) overlay.style.display='none';
+    document.dispatchEvent(new CustomEvent('techforge:start',{detail:{name}}));
+    setTimeout(function(){
+      if(!window.TechForgeBoot.ready && fallback){
+        fallback.style.display='block';
+        fallback.innerHTML='<h2>Carregando o laboratório 3D...</h2><p>O cadastro foi concluído. Aguarde alguns segundos enquanto o ambiente é preparado.</p>';
+      }
+    },2500);
+  }
+  if(btn) btn.addEventListener('click',start);
+  if(input) input.addEventListener('keydown',function(e){ if(e.key==='Enter') start(); });
+})();
+</script>
+
+<script>
+(function(){
+  function showRuntimeError(message){
+    var loader=document.getElementById('loader');
+    var text=document.getElementById('loaderText');
+    var bar=document.getElementById('loaderBar');
+    if(loader){loader.style.display='grid';}
+    if(bar){bar.style.width='100%';bar.style.background='#b42318';}
+    if(text){text.textContent='Erro ao iniciar o laboratório: '+message; text.style.maxWidth='720px';}
+    console.error('[TechForge]',message);
+  }
+  window.addEventListener('error',function(e){
+    if(e && e.message) showRuntimeError(e.message);
+  });
+  window.addEventListener('unhandledrejection',function(e){
+    var msg=e && e.reason ? (e.reason.message || String(e.reason)) : 'falha desconhecida';
+    showRuntimeError(msg);
+  });
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+(function(){
+const loader=document.getElementById('loader'),loaderBar=document.getElementById('loaderBar'),loaderText=document.getElementById('loaderText'),fallback=document.getElementById('fallback');
+
+loaderBar.style.width='35%';
+loaderText.textContent='Construindo sala, bancadas e componentes...';
+
+const world=document.getElementById('world');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.45));
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.06;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+world.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xbfd5df);
+scene.fog=new THREE.Fog(0xbfd5df,25,52);
+
+const camera=new THREE.PerspectiveCamera(56,1,.1,100);
+camera.position.set(0,7,10);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x5b6871,1.55));
+const fill=new THREE.DirectionalLight(0xb9dcff,.85);fill.position.set(-7,8,9);scene.add(fill);
+const sun=new THREE.DirectionalLight(0xffffff,2.0);sun.position.set(8,14,5);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+
+function M(c,r){return new THREE.MeshStandardMaterial({color:c,roughness:r===undefined?.75:r})}
+function B(name,w,h,d,c,x,y,z){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c));m.name=name;m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m
+}
+function createCabinet(name,x,z,title){
+ const g=new THREE.Group();g.name=name;g.position.set(x,0,z);scene.add(g);
+ const body=new THREE.Mesh(new THREE.BoxGeometry(3.4,2.9,.95),M(0x5f788a,.82));body.position.y=1.45;body.castShadow=true;body.receiveShadow=true;g.add(body);
+ const top=new THREE.Mesh(new THREE.BoxGeometry(3.5,.10,1.0),M(0x738b9b,.55));top.position.y=2.95;g.add(top);
+ const base=new THREE.Mesh(new THREE.BoxGeometry(3.45,.14,1.0),M(0x455c69,.8));base.position.y=.07;g.add(base);
+ for(let i=0;i<3;i++){const shelf=new THREE.Mesh(new THREE.BoxGeometry(3.08,.06,.70),M(0xdfe9ef,.45));shelf.position.set(0,.80+i*.72,.05);g.add(shelf)}
+ for(let c=-1;c<=1;c++){const div=new THREE.Mesh(new THREE.BoxGeometry(.04,2.3,.70),M(0x89a1b1,.8));div.position.set(c*1.02,1.52,.05);g.add(div)}
+ const doorL=new THREE.Mesh(new THREE.BoxGeometry(1.44,2.36,.03),M(0x7f98a8,.34));doorL.position.set(-.77,1.54,.40);g.add(doorL);
+ const doorR=doorL.clone();doorR.position.x=.77;g.add(doorR);
+ const glassTint=new THREE.MeshBasicMaterial({color:0xdff5ff,transparent:true,opacity:.16});
+ const glassL=new THREE.Mesh(new THREE.PlaneGeometry(1.16,1.98),glassTint);glassL.position.set(-.77,1.56,.43);g.add(glassL);
+ const glassR=glassL.clone();glassR.position.x=.77;g.add(glassR);
+ const handleL=new THREE.Mesh(new THREE.BoxGeometry(.06,.32,.06),M(0xe8eff3,.2));handleL.position.set(-.05,1.54,.43);g.add(handleL);
+ const handleR=handleL.clone();handleR.position.x=.05;g.add(handleR);
+ wallSign(title,x,3.34,z+.50,3.25,.52,{fontSize:48,color:'#005b93',accent:'#f7941d'});
+ return g
+}
+function shelfProp(type,x,y,z){
+ let p;
+ if(type==='box') p=new THREE.Mesh(new THREE.BoxGeometry(.56,.24,.40),M(0xb8c6d0,.55));
+ else if(type==='crate') p=new THREE.Mesh(new THREE.BoxGeometry(.72,.22,.46),M(0x8aa0ad,.65));
+ else if(type==='tool'){p=new THREE.Group();const handle=new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,.22,12),M(0xf0b245,.45));handle.rotation.z=Math.PI/2;p.add(handle);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.22,10),M(0xcfd8df,.3));shaft.rotation.z=Math.PI/2;shaft.position.x=.18;p.add(shaft)}
+ else if(type==='ram') p=new THREE.Mesh(new THREE.BoxGeometry(.48,.06,.18),M(0x2fac7c,.55));
+ else if(type==='board') p=new THREE.Mesh(new THREE.BoxGeometry(.60,.05,.42),M(0x269472,.55));
+ else if(type==='disk') p=new THREE.Mesh(new THREE.BoxGeometry(.54,.04,.18),M(0x9faeb9,.55));
+ else p=new THREE.Mesh(new THREE.BoxGeometry(.34,.18,.24),M(0xd7e3ea,.45));
+ p.position.set(x,y,z);p.traverse?p.traverse(function(n){if(n.isMesh){n.castShadow=true;n.receiveShadow=true;}}):(p.castShadow=true);
+ scene.add(p);return p
+}
+function label(text,x,y,z,s){
+ const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='rgba(255,255,255,.95)';ctx.fillRect(0,0,512,128);ctx.fillStyle='#075a8d';ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,64);
+ const t=new THREE.CanvasTexture(c);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true}));sp.scale.set(s||3.4,.85,1);sp.position.set(x,y,z);scene.add(sp);return sp
+}
+function makeCanvasSign(lines,opts){
+ opts=opts||{};const c=document.createElement('canvas');c.width=1024;c.height=512;const ctx=c.getContext('2d');ctx.fillStyle=opts.bg||'#ffffff';ctx.fillRect(0,0,c.width,c.height);if(opts.border!==false){ctx.strokeStyle=opts.borderColor||'#c7dbe7';ctx.lineWidth=18;ctx.strokeRect(9,9,c.width-18,c.height-18)}if(opts.accent){ctx.fillStyle=opts.accent;ctx.fillRect(0,0,28,c.height)}const arr=Array.isArray(lines)?lines:[lines];const fs=opts.fontSize||72;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 '+fs+'px Arial';ctx.fillStyle=opts.color||'#006bb6';const gap=fs*1.18,total=(arr.length-1)*gap;arr.forEach((t,i)=>ctx.fillText(t,c.width/2,c.height/2-total/2+i*gap));const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;return tex
+}
+function wallSign(lines,x,y,z,w,h,opts){const tex=makeCanvasSign(lines,opts);const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex}));mesh.position.set(x,y,z);scene.add(mesh);return mesh}
+function senacWallLogo(x,y,z,w,h){const c=document.createElement('canvas');c.width=1024;c.height=420;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle='#f7941d';ctx.lineWidth=28;ctx.lineCap='round';[[165,110,280,20,430,35,535,105],[220,168,335,80,485,95,590,165],[275,226,390,140,535,150,640,220]].forEach(a=>{ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.bezierCurveTo(a[2],a[3],a[4],a[5],a[6],a[7]);ctx.stroke()});ctx.fillStyle='#006bb6';ctx.font='900 126px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SENAC',520,315);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex}));mesh.position.set(x,y,z);scene.add(mesh);return mesh}
+
+
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(28,20),M(0xd8e2e6,.95));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const floorGrid=new THREE.GridHelper(28,28,0xa9c1ce,0xcbdbe3);floorGrid.position.y=.006;floorGrid.material.opacity=.24;floorGrid.material.transparent=true;scene.add(floorGrid);
+const matDesktop=new THREE.Mesh(new THREE.PlaneGeometry(5.7,3.1),M(0x567487,.92));matDesktop.rotation.x=-Math.PI/2;matDesktop.position.set(-7,.012,6.15);scene.add(matDesktop);
+const matNotebook=new THREE.Mesh(new THREE.PlaneGeometry(5.7,3.1),M(0x567487,.92));matNotebook.rotation.x=-Math.PI/2;matNotebook.position.set(7,.012,6.15);scene.add(matNotebook);
+[[-6,3.72,-3],[0,3.72,-3],[6,3.72,-3],[-6,3.72,3],[0,3.72,3],[6,3.72,3]].forEach(function(p){const panel=new THREE.Mesh(new THREE.BoxGeometry(2.2,.06,.72),new THREE.MeshStandardMaterial({color:0xf7fbff,emissive:0xffffff,emissiveIntensity:.30,roughness:.25}));panel.position.set(p[0],p[1],p[2]);scene.add(panel);const light=new THREE.PointLight(0xeaf7ff,.26,8,2);light.position.set(p[0],3.4,p[2]);scene.add(light)});
+B('backWall',28,4,.35,0x8fb3c4,0,2,-10);B('leftWall',.35,4,20,0x9dbbc8,-14,2,0);B('rightWall',.35,4,20,0x9dbbc8,14,2,0);
+B('accentBlue',28,.18,.05,0x006bb6,0,1.05,-9.78);B('accentOrange',28,.06,.06,0xf7941d,0,.92,-9.77);
+B('board',10.4,3.25,.16,0xeaf2f6,0,2.78,-9.80);senacWallLogo(-3.35,3.40,-9.69,2.5,1.02);wallSign(['LABORATÓRIO DE MANUTENÇÃO','DE HARDWARE'],1.75,3.48,-9.69,5.7,1.18,{fontSize:63,color:'#006bb6'});wallSign(['SEGURANÇA','Desenergize • Organize • Proteja'],-9.55,3.30,-9.69,3.6,1.08,{fontSize:44,color:'#285a73',accent:'#f7941d'});wallSign(['COMPATIBILIDADE','Soquete • DDR • Interface'],9.55,3.30,-9.69,3.6,1.08,{fontSize:44,color:'#285a73',accent:'#006bb6'});
+
+[[-8,-3.5],[-4,-3.5],[4,-3.5],[8,-3.5],[-8,.5],[-4,.5],[4,.5],[8,.5]].forEach(function(p,i){
+ B('desk'+i,3,.18,1.4,0x8b5e3d,p[0],1,p[1]);B('l1'+i,.18,1.8,.18,0x574539,p[0]-1.1,.1,p[1]);B('l2'+i,.18,1.8,.18,0x574539,p[0]+1.1,.1,p[1])
+});
+
+B('teacherDesk',4,.22,1.5,0x7b5237,0,1,-6.1);
+B('desktopBench',5,.25,2.2,0x7d5338,-7,1,6.4);B('notebookBench',5,.25,2.2,0x7d5338,7,1,6.4);
+wallSign('BANCADA DESKTOP',-7,1.48,7.49,2.65,.48,{fontSize:54,color:'#005b93',accent:'#f7941d'});wallSign('BANCADA NOTEBOOK',7,1.48,7.49,2.75,.48,{fontSize:52,color:'#005b93',accent:'#f7941d'});
+createCabinet('toolShelfCab',-11.5,5.7,'ARMÁRIO DE FERRAMENTAS');
+createCabinet('componentShelfCab',11.5,5.7,'ARMÁRIO DE COMPONENTES');
+[[-12.3,2.25,6.02,'tool'],[-11.65,2.25,6.02,'tool'],[-10.95,2.25,6.02,'box'],[-12.25,1.54,6.02,'box'],[-11.56,1.54,6.02,'crate'],[-10.88,1.54,6.02,'tool'],[-12.25,.83,6.02,'box'],[-11.52,.83,6.02,'tool'],[-10.84,.83,6.02,'crate']].forEach(function(a){shelfProp(a[3],a[0],a[1],a[2])});
+[[10.76,2.25,6.02,'board'],[11.46,2.25,6.02,'ram'],[12.18,2.25,6.02,'disk'],[10.78,1.54,6.02,'crate'],[11.48,1.54,6.02,'board'],[12.18,1.54,6.02,'ram'],[10.78,.83,6.02,'disk'],[11.48,.83,6.02,'board'],[12.18,.83,6.02,'crate']].forEach(function(a){shelfProp(a[3],a[0],a[1],a[2])});
+
+// player
+const player=new THREE.Group();
+const torso=new THREE.Mesh(new THREE.BoxGeometry(.74,1.05,.48),M(0xf7941d));torso.position.y=1.15;torso.castShadow=true;player.add(torso);
+const neck=new THREE.Mesh(new THREE.BoxGeometry(.16,.12,.14),M(0xc78f66));neck.position.set(0,1.62,.02);player.add(neck);
+const head=new THREE.Mesh(new THREE.BoxGeometry(.66,.68,.66),M(0xd7a079));head.position.y=2.02;head.castShadow=true;player.add(head);
+const pHair=new THREE.Mesh(new THREE.BoxGeometry(.70,.18,.70),M(0x3a2d24));pHair.position.set(0,2.34,0);player.add(pHair);
+const pFringe=new THREE.Mesh(new THREE.BoxGeometry(.54,.12,.12),M(0x3a2d24));pFringe.position.set(0,2.18,.28);player.add(pFringe);
+const pEye1=new THREE.Mesh(new THREE.BoxGeometry(.08,.09,.03),M(0x1f2d36,.4));pEye1.position.set(-.15,2.05,.34);player.add(pEye1);
+const pEye2=pEye1.clone();pEye2.position.x=.15;player.add(pEye2);
+const pBrow1=new THREE.Mesh(new THREE.BoxGeometry(.11,.025,.03),M(0x2d1f1a,.4));pBrow1.position.set(-.15,2.14,.34);player.add(pBrow1);
+const pBrow2=pBrow1.clone();pBrow2.position.x=.15;player.add(pBrow2);
+const pNose=new THREE.Mesh(new THREE.BoxGeometry(.04,.09,.03),M(0xc58e67,.3));pNose.position.set(0,1.98,.345);player.add(pNose);
+const pMouth=new THREE.Mesh(new THREE.BoxGeometry(.22,.04,.03),M(0x8b3f3e,.4));pMouth.position.set(0,1.85,.345);player.add(pMouth);
+const leg1=new THREE.Mesh(new THREE.BoxGeometry(.22,.82,.28),M(0x263746));leg1.position.set(-.18,.40,0);leg1.castShadow=true;player.add(leg1);
+const leg2=leg1.clone();leg2.position.x=.18;player.add(leg2);
+const armMaterial=M(0xc78f66,.55), sleeveMat=M(0xd98612,.55);
+const leftArmPivot=new THREE.Group();leftArmPivot.position.set(-.47,1.48,0);player.add(leftArmPivot);
+const leftArmSleeve=new THREE.Mesh(new THREE.BoxGeometry(.18,.26,.2),sleeveMat);leftArmSleeve.position.y=-.1;leftArmPivot.add(leftArmSleeve);
+const leftArm=new THREE.Mesh(new THREE.BoxGeometry(.18,.62,.2),armMaterial);leftArm.position.y=-.42;leftArm.castShadow=true;leftArmPivot.add(leftArm);
+const rightArmPivot=new THREE.Group();rightArmPivot.position.set(.47,1.48,0);player.add(rightArmPivot);
+const rightArmSleeve=new THREE.Mesh(new THREE.BoxGeometry(.18,.26,.2),sleeveMat);rightArmSleeve.position.y=-.1;rightArmPivot.add(rightArmSleeve);
+const rightArm=new THREE.Mesh(new THREE.BoxGeometry(.18,.62,.2),armMaterial);rightArm.position.y=-.42;rightArm.castShadow=true;rightArmPivot.add(rightArm);
+const hand=new THREE.Group();hand.position.set(.18,-.62,.14);rightArmPivot.add(hand);
+player.position.set(0,0,8.2);scene.add(player);
+// Prof. Carlos
+const maya=new THREE.Group();
+const mb=new THREE.Mesh(new THREE.BoxGeometry(.84,1.12,.52),M(0x006bb6));mb.position.y=1.18;maya.add(mb);
+const mc=new THREE.Mesh(new THREE.BoxGeometry(.24,.22,.18),M(0xffffff,.2));mc.position.set(0,1.55,.19);maya.add(mc);
+const mh=new THREE.Mesh(new THREE.BoxGeometry(.64,.68,.64),M(0xd49c73));mh.position.y=2.02;maya.add(mh);
+const hair=new THREE.Mesh(new THREE.BoxGeometry(.68,.18,.68),M(0x2b2b2b));hair.position.set(0,2.34,0);maya.add(hair);
+const fringe=new THREE.Mesh(new THREE.BoxGeometry(.52,.12,.12),M(0x2b2b2b));fringe.position.set(0,2.18,.28);maya.add(fringe);
+const eyeMat=M(0x1f2d36,.4);
+const eye1=new THREE.Mesh(new THREE.BoxGeometry(.08,.09,.03),eyeMat);eye1.position.set(-.14,2.05,.34);maya.add(eye1);
+const eye2=eye1.clone();eye2.position.x=.14;maya.add(eye2);
+const brow1=new THREE.Mesh(new THREE.BoxGeometry(.11,.025,.03),M(0x2d1f1a,.4));brow1.position.set(-.14,2.14,.34);maya.add(brow1);
+const brow2=brow1.clone();brow2.position.x=.14;maya.add(brow2);
+const nose=new THREE.Mesh(new THREE.BoxGeometry(.04,.09,.03),M(0xc58e67,.3));nose.position.set(0,1.98,.345);maya.add(nose);
+const mouth=new THREE.Mesh(new THREE.BoxGeometry(.2,.04,.03),M(0x7f3d32,.4));mouth.position.set(0,1.85,.345);maya.add(mouth);
+const armL=new THREE.Mesh(new THREE.BoxGeometry(.18,.82,.2),M(0xd49c73));armL.position.set(-.5,1.15,0);maya.add(armL);
+const armR=armL.clone();armR.position.x=.5;maya.add(armR);
+const legL=new THREE.Mesh(new THREE.BoxGeometry(.23,.85,.25),M(0x263746));legL.position.set(-.2,.38,0);maya.add(legL);
+const legR=legL.clone();legR.position.x=.2;maya.add(legR);
+maya.position.set(0,0,-5.3);scene.add(maya);wallSign('PROF. CARLOS • DOCENTE',0,2.92,-9.68,3.3,.54,{fontSize:52,color:'#005b93'});
+
+
+// benches visual
+const desktopModel=new THREE.Group();desktopModel.position.set(-7,1.10,6.10);scene.add(desktopModel);
+const tower=new THREE.Group();tower.position.set(-1.45,0,0);desktopModel.add(tower);
+const towerBody=new THREE.Mesh(new THREE.BoxGeometry(1.40,2.18,1.46),M(0x172b38,.78));towerBody.position.y=1.12;towerBody.castShadow=true;tower.add(towerBody);
+const frontMesh=new THREE.Mesh(new THREE.BoxGeometry(1.18,1.90,.055),M(0x243f50,.72));frontMesh.position.set(0,1.14,.755);tower.add(frontMesh);
+for(let i=0;i<3;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,12,28),M(i===1?0x19d3a4:0x13aeea,.22));ring.position.set(0,.68+i*.50,.79);tower.add(ring);const fan=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.035,24),M(0x2e4d5f,.56));fan.rotation.x=Math.PI/2;fan.position.set(0,.68+i*.50,.80);tower.add(fan)}
+const glassMat=new THREE.MeshStandardMaterial({color:0x75b4d2,roughness:.22,transparent:true,opacity:.28});const sideGlass=new THREE.Mesh(new THREE.BoxGeometry(.035,1.96,1.22),glassMat);sideGlass.position.set(.715,1.10,0);tower.add(sideGlass);
+const insideBoard=new THREE.Mesh(new THREE.BoxGeometry(.04,1.10,.82),M(0x246e58,.52));insideBoard.position.set(.67,1.18,-.05);tower.add(insideBoard);const insideGpu=new THREE.Mesh(new THREE.BoxGeometry(.05,.28,.82),M(0x263a49,.55));insideGpu.position.set(.69,.82,.05);tower.add(insideGpu);
+const topPanel=new THREE.Mesh(new THREE.BoxGeometry(1.22,.06,1.20),M(0x233b49,.68));topPanel.position.set(0,2.24,0);tower.add(topPanel);const powerBtn=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.035,18),M(0x64d4ff,.18));powerBtn.position.set(.35,2.29,.40);tower.add(powerBtn);[-.26,-.08,.10].forEach(x=>{const port=new THREE.Mesh(new THREE.BoxGeometry(.12,.025,.08),M(0x0c1e29,.45));port.position.set(x,2.29,.42);tower.add(port)});[-.48,.48].forEach(x=>[-.50,.50].forEach(z=>{const foot=new THREE.Mesh(new THREE.BoxGeometry(.18,.12,.18),M(0x101c24,.9));foot.position.set(x,.04,z);tower.add(foot)}));
+const mon=new THREE.Group();mon.position.set(.80,0,-.12);desktopModel.add(mon);const monFrame=new THREE.Mesh(new THREE.BoxGeometry(2.18,1.32,.12),M(0x172d3a,.68));monFrame.position.y=1.62;mon.add(monFrame);const dmon=new THREE.Mesh(new THREE.PlaneGeometry(1.88,1.04),new THREE.MeshBasicMaterial({color:0x214f68}));dmon.position.set(0,1.62,.066);mon.add(dmon);const dscreenGlow=new THREE.Mesh(new THREE.PlaneGeometry(1.42,.12),new THREE.MeshBasicMaterial({color:0x68c9f0,transparent:true,opacity:.42}));dscreenGlow.position.set(0,1.94,.069);mon.add(dscreenGlow);const standStem=new THREE.Mesh(new THREE.BoxGeometry(.14,.68,.12),M(0x526b7b));standStem.position.set(0,.86,0);mon.add(standStem);const standBase=new THREE.Mesh(new THREE.BoxGeometry(.92,.065,.54),M(0x6f8594));standBase.position.set(0,.50,0);mon.add(standBase);
+const keyboard=new THREE.Group();keyboard.position.set(.47,.26,.62);desktopModel.add(keyboard);const kbBase=new THREE.Mesh(new THREE.BoxGeometry(1.52,.075,.53),M(0xd8e4ea,.24));keyboard.add(kbBase);for(let r=0;r<4;r++){for(let c=0;c<10;c++){const key=new THREE.Mesh(new THREE.BoxGeometry(.115,.025,.075),M(0x3b4d59,.52));key.position.set(-.58+c*.13,.055,-.16+r*.10);keyboard.add(key)}}const mousePad=new THREE.Mesh(new THREE.BoxGeometry(.48,.025,.43),M(0x294151,.72));mousePad.position.set(1.55,.22,.58);desktopModel.add(mousePad);const mouse=new THREE.Mesh(new THREE.SphereGeometry(.12,16,12),M(0xeaf1f5,.18));mouse.scale.set(1,.55,1.45);mouse.position.set(1.55,.29,.58);desktopModel.add(mouse);const webcam=new THREE.Mesh(new THREE.BoxGeometry(.26,.075,.06),M(0x233947));webcam.position.set(.80,2.33,-.04);desktopModel.add(webcam);
+const desktopSidePanel=sideGlass;
+const notebookModel=new THREE.Group();notebookModel.position.set(7,1.10,6.10);scene.add(notebookModel);
+const nbbase=new THREE.Mesh(new THREE.BoxGeometry(2.40,.15,1.68),M(0x637b8b,.66));nbbase.position.y=.10;nbbase.castShadow=true;notebookModel.add(nbbase);const nbdeck=new THREE.Mesh(new THREE.BoxGeometry(2.12,.055,1.22),M(0x495f6f,.72));nbdeck.position.set(0,.20,.02);notebookModel.add(nbdeck);const nbtrack=new THREE.Mesh(new THREE.BoxGeometry(.50,.018,.31),M(0xa8bac4,.22));nbtrack.position.set(0,.245,.38);notebookModel.add(nbtrack);const nbkeysBase=new THREE.Mesh(new THREE.BoxGeometry(1.55,.035,.60),M(0x344b5a,.72));nbkeysBase.position.set(0,.235,-.06);notebookModel.add(nbkeysBase);for(let r=0;r<4;r++){for(let c=0;c<10;c++){const key=new THREE.Mesh(new THREE.BoxGeometry(.105,.016,.065),M(0xd7e2e8,.22));key.position.set(-.58+c*.13,.265,-.28+r*.11);notebookModel.add(key)}}
+const nbscreenFrame=new THREE.Mesh(new THREE.BoxGeometry(2.24,1.38,.13),M(0x1a3241,.72));nbscreenFrame.position.set(0,1.05,-.71);nbscreenFrame.rotation.x=-.23;notebookModel.add(nbscreenFrame);const nbscreen=new THREE.Mesh(new THREE.PlaneGeometry(1.86,1.04),new THREE.MeshBasicMaterial({color:0x214f68}));nbscreen.position.set(0,1.06,-.635);nbscreen.rotation.x=-.23;notebookModel.add(nbscreen);const nbGlow=new THREE.Mesh(new THREE.PlaneGeometry(1.28,.13),new THREE.MeshBasicMaterial({color:0x68c9f0,transparent:true,opacity:.40}));nbGlow.position.set(0,1.42,-.625);nbGlow.rotation.x=-.23;notebookModel.add(nbGlow);const cameraDot=new THREE.Mesh(new THREE.SphereGeometry(.025,10,8),M(0x0c1720,.28));cameraDot.position.set(0,1.60,-.635);notebookModel.add(cameraDot);const nbhinge=new THREE.Mesh(new THREE.BoxGeometry(1.64,.06,.10),M(0x3f5666));nbhinge.position.set(0,.29,-.61);notebookModel.add(nbhinge);const notebookBottom=new THREE.Mesh(new THREE.BoxGeometry(2.30,.06,1.56),M(0x556c7c,.62));notebookBottom.position.set(0,.02,.02);notebookModel.add(notebookBottom);
+const installTargets={
+ desktop:{motherboard:[-.73,1.22,-.06],cpu:[-.70,1.34,-.05],cooler:[-.66,1.36,-.04],ram:[-.68,1.39,.31],nvme:[-.69,1.03,.22],psu:[-1.43,.39,-.10],gpu:[-.67,.82,.08],cable24:[-.66,1.16,.42],eps:[-.66,1.63,.31],panel:[0,0,0]},
+ notebook:{nbRam:[-.30,.36,.18],nbNvme:[.24,.34,.18],wifi:[.72,.34,.18],flex:[0,.25,-.12],battery:[0,.13,.34]}
+};
+const installRotations={desktop:{motherboard:[0,0,Math.PI/2],cpu:[0,0,Math.PI/2],cooler:[0,0,Math.PI/2],ram:[0,0,Math.PI/2],nvme:[0,0,Math.PI/2],psu:[0,0,0],gpu:[0,0,Math.PI/2],cable24:[0,0,Math.PI/2],eps:[0,0,Math.PI/2]},notebook:{}};
+const installedVisuals={desktop:new Map(),notebook:new Map()};
+
+const defs={
+wrist:{name:'Pulseira antiestática',c:0x3c94c5,info:'Reduz risco de descarga eletrostática.',checks:['Use em aterramento apropriado','Evite contatos e trilhas']},
+phillips:{name:'Chave Phillips',c:0xf0b245,info:'Ferramenta para fixar/remover parafusos.',checks:['Use ponta correta','Evite excesso de força']},
+spudger:{name:'Espátula plástica',c:0x5aa38a,info:'Abre carcaças sem marcar ou danificar presilhas.',checks:['Não force presilhas','Trabalhe pela borda']},
+paste:{name:'Pasta térmica',c:0xb7c2ca,info:'Interface térmica entre CPU e dissipador.',checks:['Quantidade moderada','Superfície limpa']},
+motherboard:{name:'Placa-mãe',c:0x269472,info:'Interliga os principais componentes.',checks:['Soquete da CPU','DDR','M.2/SATA/PCIe']},
+cpu:{name:'Processador',c:0x8fc8ff,info:'Executa instruções e processa dados.',checks:['Soquete','Orientação','Não tocar contatos']},
+cooler:{name:'Cooler',c:0xf7941d,info:'Remove calor da CPU.',checks:['Fixação','CPU_FAN']},
+ram:{name:'Memória RAM',c:0x2fac7c,info:'Memória temporária do sistema.',checks:['Padrão DDR','Encaixe','Capacidade']},
+nvme:{name:'SSD NVMe M.2',c:0x9faeb9,info:'Armazenamento PCIe/NVMe.',checks:['M.2 é formato','Verifique interface']},
+psu:{name:'Fonte ATX',c:0x303b46,info:'Converte e distribui energia.',checks:['Potência','Conectores']},
+gpu:{name:'Placa de vídeo',c:0x0b5cad,info:'Processa gráficos.',checks:['PCIe','Espaço','Alimentação']},
+cable24:{name:'Cabo ATX 24 pinos',c:0xf5a43a,info:'Alimentação principal da placa-mãe.',checks:['Trava','Não force']},
+eps:{name:'Cabo EPS CPU',c:0xf2c14e,info:'Alimentação do processador.',checks:['CPU/EPS','Não confundir com PCIe']},
+panel:{name:'Tampa lateral',c:0xc9d9e4,info:'Fecha o gabinete após inspeção.',checks:['Cabos organizados','Nada prensado']},
+nbRam:{name:'SODIMM DDR5',c:0x2fac7c,info:'Memória compacta para notebook.',checks:['DDR correto','Ângulo']},
+nbNvme:{name:'SSD M.2 NVMe',c:0x9faeb9,info:'Armazenamento compacto.',checks:['Interface','Fixação']},
+wifi:{name:'Módulo Wi-Fi',c:0x6bbdd8,info:'Conectividade sem fio.',checks:['Antenas','Conectores coaxiais']},
+flex:{name:'Cabo flex',c:0xe9a447,info:'Interliga módulos internos.',checks:['Abra trava','Não dobre']},
+battery:{name:'Bateria interna',c:0x36424d,info:'Energia interna do notebook.',checks:['Desconectar antes','Nunca perfurar']}
+};
+function itemMesh(id){
+ const d=defs[id];let m;
+ if(id==='motherboard'){const g=new THREE.Group();const pcb=new THREE.Mesh(new THREE.BoxGeometry(.90,.055,.72),M(0x176b50,.56));g.add(pcb);const socket=new THREE.Mesh(new THREE.BoxGeometry(.26,.05,.26),M(0xb8c2c9,.35));socket.position.set(-.14,.055,-.08);g.add(socket);for(let i=0;i<4;i++){const slot=new THREE.Mesh(new THREE.BoxGeometry(.045,.04,.42),M(i%2?0x34465a:0x202e3a,.45));slot.position.set(.20+i*.075,.055,-.02);g.add(slot)}for(let i=0;i<2;i++){const pcie=new THREE.Mesh(new THREE.BoxGeometry(.42,.035,.045),M(0xd9e3e9,.35));pcie.position.set(-.08,.055,.21+i*.10);g.add(pcie)}const m2=new THREE.Mesh(new THREE.BoxGeometry(.28,.025,.04),M(0x9daeb9,.38));m2.position.set(-.22,.055,.10);g.add(m2);for(let i=0;i<6;i++){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.06,12),M(0x364552,.48));cap.position.set(-.36+i*.075,.075,-.28);g.add(cap)}m=g}
+ else if(id==='cpu'){const g=new THREE.Group();const substrate=new THREE.Mesh(new THREE.BoxGeometry(.34,.04,.34),M(0x2d8068,.45));g.add(substrate);const ihs=new THREE.Mesh(new THREE.BoxGeometry(.27,.055,.27),M(0xcbd1d5,.25));ihs.position.y=.045;g.add(ihs);m=g}
+ else if(id==='ram'||id==='nbRam'){const g=new THREE.Group();const w=id==='ram'?.66:.52;const board=new THREE.Mesh(new THREE.BoxGeometry(w,.16,.035),M(0x267a5a,.48));g.add(board);for(let i=0;i<8;i++){const chip=new THREE.Mesh(new THREE.BoxGeometry(.055,.075,.02),M(0x172831,.55));chip.position.set(-w/2+.07+i*(w-.14)/7,.015,.03);g.add(chip)}m=g}
+ else if(id==='nvme'||id==='nbNvme'){const g=new THREE.Group();const board=new THREE.Mesh(new THREE.BoxGeometry(.62,.13,.025),M(0x2b7c5c,.48));g.add(board);for(let i=0;i<3;i++){const chip=new THREE.Mesh(new THREE.BoxGeometry(.12,.07,.02),M(0x1a2932,.55));chip.position.set(-.18+i*.19,.015,.025);g.add(chip)}const gold=new THREE.Mesh(new THREE.BoxGeometry(.10,.13,.012),M(0xd5ae4c,.18));gold.position.set(.36,0,0);g.add(gold);m=g}
+ else if(id==='cooler'){const g=new THREE.Group();const sink=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.13,24),M(0x8e9aa2,.38));sink.rotation.x=Math.PI/2;g.add(sink);const fanRing=new THREE.Mesh(new THREE.TorusGeometry(.20,.035,10,28),M(0x273d4b,.45));fanRing.position.z=.10;g.add(fanRing);m=g}
+ else if(id==='psu'){const g=new THREE.Group();const box=new THREE.Mesh(new THREE.BoxGeometry(.62,.42,.52),M(0x26333c,.72));g.add(box);const grill=new THREE.Mesh(new THREE.TorusGeometry(.15,.02,10,28),M(0x8fa0aa,.35));grill.rotation.y=Math.PI/2;grill.position.x=.32;g.add(grill);m=g}
+ else if(id==='gpu'){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.82,.28,.34),M(0x263b4a,.60));g.add(body);for(let i=0;i<2;i++){const fan=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.025,20),M(0x101d25,.55));fan.rotation.x=Math.PI/2;fan.position.set(-.20+i*.40,0,.18);g.add(fan);const ring=new THREE.Mesh(new THREE.TorusGeometry(.105,.015,8,24),M(0x5aaed0,.30));ring.position.set(-.20+i*.40,0,.20);g.add(ring)}m=g}
+ else if(id==='cable24'||id==='eps'){const g=new THREE.Group();const count=id==='cable24'?6:4;for(let i=0;i<count;i++){const wire=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.48,8),M(i%2?0xf1bb3f:0x202d36,.45));wire.rotation.z=Math.PI/2;wire.position.y=(i-(count-1)/2)*.035;g.add(wire)}const plug=new THREE.Mesh(new THREE.BoxGeometry(.10,.20,.13),M(0x1e2b34,.52));plug.position.x=.28;g.add(plug);m=g}
+ else if(id==='wifi'){const g=new THREE.Group();const board=new THREE.Mesh(new THREE.BoxGeometry(.30,.22,.025),M(0x28775b,.48));g.add(board);const shield=new THREE.Mesh(new THREE.BoxGeometry(.18,.13,.03),M(0xb9c4ca,.30));shield.position.z=.025;g.add(shield);m=g}
+ else if(id==='battery'){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.80,.28,.45),M(0x2c3942,.72));g.add(body);const stripe=new THREE.Mesh(new THREE.BoxGeometry(.82,.05,.47),M(0x4e6675,.45));stripe.position.y=.08;g.add(stripe);m=g}
+ else if(id==='flex'){m=new THREE.Mesh(new THREE.BoxGeometry(.62,.04,.20),M(0xe8a044,.38))}
+ else if(id==='panel'){m=new THREE.Mesh(new THREE.BoxGeometry(.78,.92,.035),new THREE.MeshStandardMaterial({color:0x80b8d1,roughness:.24,transparent:true,opacity:.40}))}
+ else if(id==='phillips'){const g=new THREE.Group();const handle=new THREE.Mesh(new THREE.CylinderGeometry(.09,.11,.42,18),M(0xe63e4d,.45));handle.rotation.z=Math.PI/2;g.add(handle);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.42,12),M(0xcfd8df,.35));shaft.rotation.z=Math.PI/2;shaft.position.x=.36;g.add(shaft);const tip=new THREE.Mesh(new THREE.ConeGeometry(.035,.10,12),M(0x9ba9b3,.35));tip.rotation.z=-Math.PI/2;tip.position.x=.58;g.add(tip);m=g}
+ else if(id==='spudger'){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(.56,.06,.08),M(0x4aa782,.45));g.add(body);const tip=new THREE.Mesh(new THREE.BoxGeometry(.12,.035,.06),M(0x8ed1b7,.45));tip.position.x=.30;g.add(tip);m=g}
+ else if(id==='wrist'){const g=new THREE.Group();const band=new THREE.Mesh(new THREE.TorusGeometry(.16,.04,12,28),M(0x3c94c5,.35));band.rotation.y=Math.PI/2;g.add(band);const clip=new THREE.Mesh(new THREE.BoxGeometry(.12,.08,.10),M(0x9fb4c0,.35));clip.position.x=.22;g.add(clip);m=g}
+ else if(id==='paste'){const g=new THREE.Group();const tube=new THREE.Mesh(new THREE.CylinderGeometry(.05,.06,.46,16),M(0xe9eef1,.28));tube.rotation.z=Math.PI/2;g.add(tube);const band=new THREE.Mesh(new THREE.CylinderGeometry(.061,.061,.18,16),M(0xf7941d,.35));band.rotation.z=Math.PI/2;band.position.x=-.05;g.add(band);const nozzle=new THREE.Mesh(new THREE.ConeGeometry(.03,.12,10),M(0xdde6ea,.25));nozzle.rotation.z=-Math.PI/2;nozzle.position.x=.28;g.add(nozzle);m=g}
+ else m=new THREE.Mesh(new THREE.BoxGeometry(.4,.25,.35),M(d.c,.65));
+ m.traverse?m.traverse(function(n){if(n.isMesh){n.castShadow=true;n.receiveShadow=true}}):(m.castShadow=true);m.userData.itemId=id;return m
+}
+const spawn={
+wrist:[-11.7,2.4,5.4],phillips:[-11.0,2.4,5.4],spudger:[-11.7,1.6,5.4],paste:[-11.0,1.6,5.4],
+motherboard:[11.2,2.45,5.4],cpu:[11.8,2.45,5.4],cooler:[12.3,2.45,5.4],ram:[11.1,1.65,5.4],nvme:[11.7,1.65,5.4],psu:[12.3,1.65,5.4],gpu:[11.1,.9,5.4],cable24:[11.7,.9,5.4],eps:[12.3,.9,5.4],panel:[10.5,.9,5.4],
+nbRam:[10.5,2.45,5.4],nbNvme:[10.5,1.65,5.4],wifi:[10.5,.9,5.4],flex:[12.7,2.45,5.4],battery:[12.7,1.65,5.4]
+};
+const worldItems={};
+Object.keys(spawn).forEach(function(id){const m=itemMesh(id);m.position.set.apply(m.position,spawn[id]);scene.add(m);worldItems[id]=m;});
+
+const desktopSteps=[
+['pickup','wrist','Preparar controle eletrostático','Pegue a pulseira antiestática.'],
+['action','desktop','Abrir gabinete','Aproxime-se da bancada e remova a tampa.'],
+['pickup','motherboard','Selecionar placa-mãe','Pegue a placa-mãe.'],
+['install','motherboard','Instalar placa-mãe','Leve a placa-mãe ao gabinete.'],
+['pickup','phillips','Selecionar ferramenta','Pegue a chave Phillips.'],
+['action','desktop','Fixar placa-mãe','Fixe a placa na bancada.'],
+['pickup','cpu','Selecionar processador','Pegue o processador compatível.'],
+['install','cpu','Instalar processador','Posicione o processador no soquete.'],
+['pickup','paste','Selecionar pasta térmica','Pegue a pasta térmica.'],
+['action','desktop','Aplicar pasta térmica','Aplique uma quantidade moderada.'],
+['pickup','cooler','Selecionar cooler','Pegue o cooler.'],
+['install','cooler','Instalar cooler','Instale e conecte CPU_FAN.'],
+['pickup','ram','Selecionar RAM','Pegue a memória compatível.'],
+['install','ram','Instalar RAM','Alinhe e pressione até travar.'],
+['pickup','nvme','Selecionar NVMe','Pegue o SSD M.2 NVMe.'],
+['install','nvme','Instalar NVMe','Insira em ângulo e fixe.'],
+['pickup','psu','Selecionar fonte','Pegue a fonte ATX.'],
+['install','psu','Instalar fonte','Posicione a fonte.'],
+['pickup','gpu','Selecionar GPU','Pegue a placa de vídeo.'],
+['install','gpu','Instalar GPU','Encaixe no PCIe.'],
+['pickup','cable24','Selecionar ATX 24 pinos','Pegue o cabo principal.'],
+['install','cable24','Conectar ATX 24 pinos','Conecte à placa-mãe.'],
+['pickup','eps','Selecionar EPS CPU','Pegue o cabo da CPU.'],
+['install','eps','Conectar EPS','Conecte alimentação da CPU.'],
+['action','desktop','Inspeção final','Revise conexões e organização.'],
+['pickup','panel','Pegar tampa lateral','Pegue a tampa.'],
+['install','panel','Fechar gabinete','Feche sem prensar cabos.'],
+['action','desktop','Teste funcional','Ligue e observe o POST.']
+];
+
+const notebookSteps=[
+['action','notebook','Desenergizar notebook','Desligue e retire alimentação externa.'],
+['pickup','phillips','Selecionar chave Phillips','Pegue a ferramenta.'],
+['action','notebook','Remover parafusos','Organize os parafusos.'],
+['pickup','spudger','Selecionar espátula','Pegue a espátula plástica.'],
+['action','notebook','Abrir carcaça','Solte as presilhas.'],
+['action','notebook','Desconectar bateria','Isole a alimentação interna.'],
+['pickup','nbRam','Selecionar SODIMM','Pegue a memória.'],
+['install','nbRam','Instalar memória','Insira em ângulo e trave.'],
+['pickup','nbNvme','Selecionar SSD','Pegue o NVMe.'],
+['install','nbNvme','Instalar SSD','Insira e fixe.'],
+['pickup','wifi','Selecionar Wi-Fi','Pegue o módulo sem fio.'],
+['install','wifi','Instalar Wi-Fi','Fixe e conecte antenas.'],
+['pickup','flex','Selecionar cabo flex','Pegue o cabo.'],
+['install','flex','Conectar cabo flex','Abra trava, alinhe e feche.'],
+['pickup','battery','Selecionar bateria','Pegue a bateria.'],
+['install','battery','Reconectar bateria','Reconecte no final.'],
+['action','notebook','Inspeção final','Revise cabos e componentes.'],
+['action','notebook','Fechar carcaça','Reposicione a tampa.'],
+['action','notebook','Teste funcional','Ligue e verifique inicialização.']
+];
+
+const state={mission:false,job:null,step:0,held:null,errors:0,procedures:0,done:{desktop:false,notebook:false},dialog:false,inspect:false,reduced:false,studentName:'',sound:true,cutscene:false,animating:false};
+function steps(){return state.job==='desktop'?desktopSteps:state.job==='notebook'?notebookSteps:[]}
+function current(){return steps()[state.step]||null}
+
+const ui={
+prompt:document.getElementById('prompt'),work:document.getElementById('workOrder'),stepTitle:document.getElementById('stepTitle'),stepDetail:document.getElementById('stepDetail'),bar:document.getElementById('progressBar'),errors:document.getElementById('errorCount'),procedures:document.getElementById('procedureCount'),missionTitle:document.getElementById('missionTitle'),mode:document.getElementById('modeChip'),progress:document.getElementById('progressChip'),
+dialog:document.getElementById('dialog'),dialogName:document.getElementById('dialogName'),dialogText:document.getElementById('dialogText'),dialogActions:document.getElementById('dialogActions'),
+inspect:document.getElementById('inspectPanel'),inspectTitle:document.getElementById('inspectTitle'),inspectBody:document.getElementById('inspectBody'),inspectList:document.getElementById('inspectList'),
+inventoryPreview:document.getElementById('inventoryPreview'),inventoryMiniGrid:document.getElementById('inventoryMiniGrid'),inventoryMiniHint:document.getElementById('inventoryMiniHint'),
+cinematic:document.getElementById('cinematicOverlay'),cinematicText:document.getElementById('cinematicText'),pickupToast:document.getElementById('pickupToast'),soundBtn:document.getElementById('soundBtn')
+};
+function iconFor(id){const wrap=(inner)=>'<svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg">'+inner+'</svg>';
+if(id==='motherboard')return wrap('<rect x="9" y="8" width="102" height="68" rx="5" fill="#197253"/><rect x="22" y="20" width="29" height="29" rx="3" fill="#c4cdd2" stroke="#7a8b95" stroke-width="3"/><rect x="61" y="15" width="5" height="39" rx="2" fill="#253947"/><rect x="70" y="15" width="5" height="39" rx="2" fill="#253947"/><rect x="79" y="15" width="5" height="39" rx="2" fill="#253947"/><rect x="24" y="59" width="52" height="5" rx="2" fill="#e3e8eb"/><rect x="24" y="67" width="42" height="4" rx="2" fill="#e3e8eb"/><circle cx="99" cy="20" r="4" fill="#d6b458"/><circle cx="99" cy="32" r="4" fill="#d6b458"/>');
+if(id==='cpu')return wrap('<rect x="30" y="12" width="60" height="60" rx="7" fill="#2d8068"/><rect x="37" y="19" width="46" height="46" rx="5" fill="#cbd1d5" stroke="#8b989f" stroke-width="3"/>');
+if(id==='cooler')return wrap('<circle cx="60" cy="42" r="31" fill="#2c4351" stroke="#7995a6" stroke-width="5"/><circle cx="60" cy="42" r="8" fill="#a8bdc8"/><g fill="#5c7788"><path d="M60 16c8 4 12 10 12 18-9-2-15-6-18-13z"/><path d="M86 42c-4 8-10 12-18 12 2-9 6-15 13-18z"/><path d="M60 68c-8-4-12-10-12-18 9 2 15 6 18 13z"/><path d="M34 42c4-8 10-12 18-12-2 9-6 15-13 18z"/></g>');
+if(id==='ram'||id==='nbRam')return wrap('<rect x="10" y="27" width="100" height="30" rx="3" fill="#267a5a"/><g fill="#182932"><rect x="18" y="33" width="12" height="13"/><rect x="34" y="33" width="12" height="13"/><rect x="50" y="33" width="12" height="13"/><rect x="66" y="33" width="12" height="13"/><rect x="82" y="33" width="12" height="13"/></g><path d="M17 58h86" stroke="#d8b357" stroke-width="5" stroke-dasharray="4 3"/>');
+if(id==='nvme'||id==='nbNvme')return wrap('<rect x="13" y="28" width="94" height="28" rx="4" fill="#2b7c5c"/><rect x="23" y="34" width="22" height="16" fill="#172831"/><rect x="50" y="34" width="22" height="16" fill="#172831"/><rect x="77" y="34" width="15" height="16" fill="#172831"/><rect x="97" y="28" width="10" height="28" fill="#d6b151"/>');
+if(id==='psu')return wrap('<rect x="24" y="17" width="72" height="50" rx="6" fill="#26333c"/><circle cx="48" cy="42" r="18" fill="none" stroke="#8fa0aa" stroke-width="4"/><path d="M48 25v34M31 42h34M36 30l24 24M60 30L36 54" stroke="#657783" stroke-width="2"/><rect x="82" y="27" width="8" height="22" fill="#f7941d"/>');
+if(id==='gpu')return wrap('<rect x="13" y="24" width="94" height="39" rx="5" fill="#263b4a"/><circle cx="43" cy="44" r="13" fill="#101d25" stroke="#58a9c7" stroke-width="3"/><circle cx="78" cy="44" r="13" fill="#101d25" stroke="#58a9c7" stroke-width="3"/><rect x="8" y="19" width="7" height="49" fill="#bbc6cd"/>');
+if(id==='cable24'||id==='eps')return wrap('<g fill="none" stroke-linecap="round" stroke-width="6"><path d="M16 22C42 22 37 63 68 63" stroke="#27343d"/><path d="M16 32C39 32 42 53 69 53" stroke="#f1bb3f"/><path d="M16 42C44 42 43 43 70 43" stroke="#27343d"/><path d="M16 52C44 52 42 33 69 33" stroke="#f1bb3f"/></g><rect x="68" y="26" width="30" height="35" rx="3" fill="#1e2b34"/>');
+if(id==='phillips')return wrap('<rect x="16" y="31" width="34" height="22" rx="10" fill="#e63e4d"/><rect x="45" y="38" width="48" height="8" rx="3" fill="#cbd4da"/><path d="M93 35l14 7-14 7z" fill="#9ba9b3"/>');
+if(id==='spudger')return wrap('<rect x="18" y="36" width="78" height="12" rx="6" fill="#4aa782"/><path d="M96 36l13 6-13 6z" fill="#8ed1b7"/>');
+if(id==='wrist')return wrap('<circle cx="45" cy="42" r="22" fill="none" stroke="#3c94c5" stroke-width="9"/><rect x="62" y="34" width="18" height="16" rx="3" fill="#9fb4c0"/><path d="M80 42h28" stroke="#596f7e" stroke-width="4"/>');
+if(id==='paste')return wrap('<rect x="19" y="32" width="64" height="20" rx="10" fill="#e9eef1" stroke="#aebbc3" stroke-width="2"/><rect x="39" y="32" width="22" height="20" fill="#f7941d"/><path d="M83 35l23 7-23 7z" fill="#dce4e9"/>');
+if(id==='wifi')return wrap('<rect x="34" y="24" width="52" height="39" rx="4" fill="#28775b"/><rect x="45" y="33" width="30" height="19" rx="2" fill="#bec8ce"/><circle cx="41" cy="56" r="4" fill="#d4ae4b"/><circle cx="79" cy="56" r="4" fill="#d4ae4b"/>');
+if(id==='battery')return wrap('<rect x="15" y="27" width="90" height="34" rx="7" fill="#2c3942"/><rect x="28" y="34" width="44" height="7" fill="#4e6675"/><rect x="91" y="37" width="9" height="14" fill="#9aacb8"/>');
+if(id==='flex')return wrap('<path d="M14 32h32v18h24V31h36" fill="none" stroke="#e8a044" stroke-width="13" stroke-linejoin="round"/>');
+if(id==='panel')return wrap('<rect x="31" y="10" width="58" height="64" rx="5" fill="#8fc5dc" opacity=".55" stroke="#5f96ad" stroke-width="4"/>');return wrap('<rect x="20" y="18" width="80" height="48" rx="8" fill="#dbe7ed"/>')}
+
+const AudioFX={
+ ctx:null,enabled:true,lastStep:0,
+ ensure:function(){if(!this.enabled)return null;if(!this.ctx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)this.ctx=new AC()}if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume();return this.ctx},
+ tone:function(freq,dur,type,vol,delay){if(!this.enabled)return;const ctx=this.ensure();if(!ctx)return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+(delay||0);o.type=type||'sine';o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.03,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+(dur||.12));o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+(dur||.12)+.03)},
+ click:function(){this.tone(520,.06,'square',.018)},pickup:function(){this.tone(420,.10,'triangle',.025);this.tone(690,.13,'sine',.025,.07)},success:function(){this.tone(520,.10,'sine',.022);this.tone(690,.12,'sine',.022,.08);this.tone(880,.15,'sine',.024,.16)},error:function(){this.tone(180,.14,'sawtooth',.022);this.tone(120,.20,'sawtooth',.018,.09)},interact:function(){this.tone(360,.08,'triangle',.018);this.tone(480,.08,'triangle',.018,.05)},step:function(){const n=performance.now();if(n-this.lastStep<330)return;this.lastStep=n;this.tone(92,.05,'triangle',.012)},power:function(){this.tone(220,.12,'sine',.02);this.tone(330,.16,'sine',.02,.10);this.tone(520,.24,'sine',.022,.22)},
+ speak:function(text){if(!this.enabled||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='pt-BR';u.rate=.97;u.pitch=1;u.volume=.95;speechSynthesis.speak(u)}catch(e){}},stopSpeech:function(){if('speechSynthesis' in window)try{speechSynthesis.cancel()}catch(e){}}
+};
+function showPickupToast(id){ui.pickupToast.textContent='✓ '+defs[id].name+' selecionado';ui.pickupToast.classList.add('show');setTimeout(function(){ui.pickupToast.classList.remove('show')},1200)}
+let cinematicTimer=null;
+const cinematicLines=['Bem-vindo ao Laboratório de Manutenção de Hardware do SENAC.','Nesta prática, você irá observar, escolher ferramentas, manipular componentes e executar procedimentos técnicos.','Seu objetivo não é apenas acertar uma sequência, mas compreender por que cada decisão é necessária.','Caminhe até mim para receber a Ordem de Serviço e iniciar sua missão.'];
+function playIntroCutscene(){state.cutscene=true;ui.cinematic.classList.add('show');ui.cinematic.setAttribute('aria-hidden','false');let i=0;ui.cinematicText.textContent=cinematicLines[0];AudioFX.speak(cinematicLines.join(' '));function next(){i++;if(i<cinematicLines.length){ui.cinematicText.textContent=cinematicLines[i];cinematicTimer=setTimeout(next,1900)}else{cinematicTimer=setTimeout(endIntroCutscene,1300)}}cinematicTimer=setTimeout(next,1900)}
+function endIntroCutscene(){if(cinematicTimer)clearTimeout(cinematicTimer);AudioFX.stopSpeech();state.cutscene=false;ui.cinematic.classList.remove('show');ui.cinematic.setAttribute('aria-hidden','true');ui.cinematicText.textContent=''}
+
+const selectionUI={
+  modal:document.getElementById('selectionModal'),
+  title:document.getElementById('selectionTitle'),
+  subtitle:document.getElementById('selectionSubtitle'),
+  grid:document.getElementById('selectionGrid'),
+  help:document.getElementById('selectionHelp')
+};
+const sceneUI={
+  modal:document.getElementById('sceneModal'),
+  badge:document.getElementById('sceneBadge'),
+  title:document.getElementById('sceneTitle'),
+  text:document.getElementById('sceneText'),
+  point1Title:document.getElementById('scenePoint1Title'),
+  point1Text:document.getElementById('scenePoint1Text'),
+  point2Title:document.getElementById('scenePoint2Title'),
+  point2Text:document.getElementById('scenePoint2Text'),
+  chip:document.getElementById('sceneChip'),
+  footer:document.getElementById('sceneFooterText'),
+  board:document.getElementById('sceneBoardLabel'),
+  ok:document.getElementById('sceneOk'),
+  cancel:document.getElementById('sceneCancel')
+};
+let selectionKind=null;
+let sceneNext=null;
+
+function showScene(cfg, next){
+ AudioFX.click();state.dialog=true; sceneNext=next||null;
+ sceneUI.badge.textContent=cfg.badge||'Cutscene pedagógica';
+ sceneUI.title.textContent=cfg.title||'Contexto da tarefa';
+ sceneUI.text.textContent=cfg.text||'';
+ sceneUI.point1Title.textContent=(cfg.points&&cfg.points[0]&&cfg.points[0].title)||'Foco técnico';
+ sceneUI.point1Text.textContent=(cfg.points&&cfg.points[0]&&cfg.points[0].text)||'';
+ sceneUI.point2Title.textContent=(cfg.points&&cfg.points[1]&&cfg.points[1].title)||'Ação do estudante';
+ sceneUI.point2Text.textContent=(cfg.points&&cfg.points[1]&&cfg.points[1].text)||'';
+ sceneUI.chip.textContent=cfg.chip||'Prática guiada';
+ sceneUI.footer.textContent=cfg.footer||'Use as orientações para relacionar a simulação ao fazer profissional no ambiente do SENAC.';
+ sceneUI.board.innerHTML=cfg.board||'SENAC<br>Laboratório de Manutenção';
+ sceneUI.ok.textContent=cfg.okLabel||'Continuar';
+ sceneUI.cancel.style.display=cfg.hideCancel?'none':'inline-block';
+ sceneUI.modal.classList.add('show'); sceneUI.modal.setAttribute('aria-hidden','false');
+}
+function hideScene(runNext){
+ sceneUI.modal.classList.remove('show'); sceneUI.modal.setAttribute('aria-hidden','true');
+ state.dialog=false; const cb=sceneNext; sceneNext=null; if(runNext && cb) cb();
+}
+function getSelectableItems(kind){
+ const s=current();
+ const toolIds=['wrist','phillips','spudger','paste'];
+ const desktopIds=['motherboard','cpu','cooler','ram','nvme','psu','gpu','cable24','eps','panel'];
+ const notebookIds=['nbRam','nbNvme','wifi','flex','battery'];
+ if(kind==='tools') return toolIds;
+ if(state.job==='notebook') return notebookIds.concat(['phillips','spudger']);
+ return desktopIds;
+}
+function openSelection(kind){
+ const s=current();
+ selectionKind=kind;
+ selectionUI.title.textContent=kind==='tools'?'Selecionar ferramenta':'Selecionar componente de hardware';
+ selectionUI.subtitle.textContent=s?'Etapa atual: '+s[2]+' — '+s[3]:'Explore as opções disponíveis para compreender sua função.';
+ const ids=getSelectableItems(kind);
+ selectionUI.grid.innerHTML='';
+ ids.forEach(function(id){
+   const d=defs[id];
+   const btn=document.createElement('button');btn.type='button';btn.className='selection-item';
+   btn.innerHTML='<span class="selection-tag">'+(kind==='tools'?'Ferramenta':'Componente')+'</span><div class="selection-icon">'+iconFor(id)+'</div><strong>'+d.name+'</strong><span class="inv-desc">'+d.info+'</span><span class="inv-check">'+d.checks[0]+'</span>';
+   btn.onclick=function(){selectFromModal(id)};
+   selectionUI.grid.appendChild(btn);
+ });
+ selectionUI.help.textContent='Escolha com base na função do item. O sistema permite tentativa, revisão e correção orientada.';
+ AudioFX.interact();selectionUI.modal.classList.add('show');selectionUI.modal.setAttribute('aria-hidden','false');state.dialog=true;
+}
+function closeSelection(){selectionUI.modal.classList.remove('show');selectionUI.modal.setAttribute('aria-hidden','true');selectionKind=null;if(!sceneUI.modal.classList.contains('show')) state.dialog=false;}
+function renderInventoryPreview(target){
+ if(!target){ui.inventoryPreview.classList.remove('show');ui.inventoryPreview.setAttribute('aria-hidden','true');return}
+ const kind=target.id==='toolShelf'?'tools':'components';
+ const ids=getSelectableItems(kind).slice(0,8);
+ ui.inventoryPreview.querySelector('.inventory-title').textContent=target.id==='toolShelf'?'Armário de ferramentas':'Armário de componentes';
+ ui.inventoryMiniGrid.innerHTML=ids.map(function(id){return '<div class="inventory-mini-item"><div class="icon">'+iconFor(id)+'</div><strong style="font-size:10px;color:#17364a">'+defs[id].name+'</strong><span>'+(target.id==='toolShelf'?'Ferramenta':'Componente')+'</span></div>'}).join('');
+ ui.inventoryMiniHint.textContent='Pressione E para abrir o inventário e selecionar o item adequado para a etapa.';
+ ui.inventoryPreview.classList.add('show');ui.inventoryPreview.setAttribute('aria-hidden','false')
+}
+function selectFromModal(id){
+ const s=current();
+ if(!state.job) return fail('Primeiro converse com Prof. Carlos e inicie uma bancada.');
+ if(!s || s[0]!=='pickup') return fail('A etapa atual não pede coleta de item. Primeiro execute o procedimento solicitado na bancada.');
+ if(selectionKind==='tools' && ['wrist','phillips','spudger','paste'].indexOf(id)===-1) return fail('Esta área é destinada às ferramentas.');
+ if(selectionKind==='components' && ['wrist','phillips','spudger','paste'].indexOf(id)!==-1) return fail('Esta área é destinada aos componentes de hardware.');
+ if(id!==s[1]){ closeSelection(); return fail('Você selecionou '+defs[id].name+', mas a etapa atual exige outra escolha. Analise função, compatibilidade e procedimento técnico.'); }
+ closeSelection();animatePickup(id,function(){showScene({badge:'Item selecionado',title:defs[id].name+' pronto para uso',text:'O estudante selecionou o item correto e agora o visualiza em mãos para relacionar o objeto à tarefa profissional.',points:[{title:'Função do item',text:defs[id].info},{title:'Próxima ação',text:'Pressione continuar para avançar e executar a etapa '+s[2].toLowerCase()+'.'}],chip:'Objeto em destaque',footer:'Se necessário, pressione F para inspecionar verificações técnicas antes de executar a ação.',okLabel:'Continuar',hideCancel:true}, advance)});
+}
+
+
+function updateUI(){
+ ui.errors.textContent=state.errors;ui.procedures.textContent=state.procedures;
+ const ctx=document.getElementById('contextText');
+ if(state.job){
+  if(ctx) ctx.textContent='Prática ativa em '+(state.job==='desktop'?'Desktop':'Notebook')+': acompanhe cada etapa, observe a função dos componentes e relacione a ação ao procedimento real de manutenção e montagem.';
+  const s=current(),pct=Math.round(state.step/steps().length*100);ui.progress.textContent=pct+'%';ui.bar.style.width=pct+'%';ui.missionTitle.textContent='Missão ativa: '+(state.job==='desktop'?'Desktop':'Notebook');ui.work.textContent=state.job==='desktop'?'Montar uma estação Desktop funcional, organizada e segura.':'Executar abertura, atualização e remontagem de um Notebook.';ui.stepTitle.textContent=s?s[2]:'Concluído';ui.stepDetail.textContent=s?s[3]:'Retorne à docente.'
+ }else{
+  if(ctx) ctx.textContent=state.mission?'Escolha uma bancada para iniciar a prática. Compare Desktop e Notebook, diferenças de arquitetura, manutenção e organização da bancada.':'Você está em um laboratório de hardware do SENAC. Converse com o docente virtual, compreenda o contexto e depois escolha a prática desejada.';
+  const d=(state.done.desktop?1:0)+(state.done.notebook?1:0);ui.progress.textContent=Math.round(d/2*100)+'%';ui.bar.style.width='0%';ui.work.textContent=state.mission?'Realize as duas práticas para comparar as arquiteturas.':'Procure Prof. Carlos para receber a tarefa.';ui.stepTitle.textContent=state.mission?'Escolha uma bancada':'Aguardando missão';ui.stepDetail.textContent=state.mission?'Desktop ou Notebook':'—'
+ }
+}
+function showDialog(name,text,actions){
+ state.dialog=true;ui.dialogName.textContent=name;ui.dialogText.textContent=text;ui.dialogActions.innerHTML='';
+ (actions||[{label:'Continuar'}]).forEach(function(a){const b=document.createElement('button');b.type='button';b.textContent=a.label;if(a.alt)b.classList.add('alt');b.onclick=function(){ui.dialog.classList.remove('show');state.dialog=false;if(a.run)a.run()};ui.dialogActions.appendChild(b)});
+ ui.dialog.classList.add('show')
+}
+function inspect(id){
+ const d=defs[id];if(!d)return;ui.inspectTitle.textContent=d.name;ui.inspectBody.textContent=d.info;ui.inspectList.innerHTML=d.checks.map(function(x){return '<li>'+x+'</li>'}).join('');ui.inspect.classList.add('show');state.inspect=true
+}
+function attach(id){
+ if(state.held)drop(true);if(worldItems[id])worldItems[id].visible=false;const h=itemMesh(id);
+ const toolLike=['phillips','spudger','wrist','paste'].indexOf(id)!==-1;
+ h.scale.multiplyScalar(id==='motherboard'||id==='gpu'||id==='panel'?0.72:(toolLike?1.0:0.86));
+ h.rotation.set(toolLike?0.55:0.35,.4,.2);h.position.set(toolLike?0.18:0.12,toolLike?0.02:0.08,.08);hand.add(h);state.held=id;ui.mode.textContent='Carregando: '+defs[id].name;showPickupToast(id)
+}
+function animatePickup(id,done){
+ if(state.animating)return;state.animating=true;AudioFX.pickup();if(state.held)drop(true);
+ const src=worldItems[id],ghost=itemMesh(id);scene.add(ghost);const start=new THREE.Vector3();if(src){src.getWorldPosition(start);src.visible=false}else{start.copy(player.position).add(new THREE.Vector3(0,1,.8))}ghost.position.copy(start);ghost.scale.multiplyScalar(.85);
+ const t0=performance.now(),dur=state.reduced?90:620;rightArmPivot.rotation.x=-1.05;
+ function tick(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3),end=new THREE.Vector3();hand.getWorldPosition(end);ghost.position.lerpVectors(start,end,e);ghost.rotation.y+=.12;ghost.rotation.z=Math.sin(t*Math.PI)*.35;const pulse=1+Math.sin(t*Math.PI)*.18;ghost.scale.setScalar(.85*pulse);if(t<1){requestAnimationFrame(tick);return}scene.remove(ghost);attach(id);state.animating=false;if(done)done()}
+ requestAnimationFrame(tick)
+}
+function drop(back){
+ while(hand.children.length)hand.remove(hand.children[0]);if(back&&state.held&&worldItems[state.held])worldItems[state.held].visible=true;state.held=null;ui.mode.textContent='Exploração'
+}
+function consume(){while(hand.children.length)hand.remove(hand.children[0]);state.held=null;ui.mode.textContent='Exploração'}
+function animateInstall(job,id,done){
+ if(job==='desktop'&&id==='panel'){
+   consume();const sx=desktopSidePanel.position.x,sr=desktopSidePanel.rotation.y,t0=performance.now(),dur=state.reduced?90:650;
+   (function tick(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);desktopSidePanel.position.x=sx+(.715-sx)*e;desktopSidePanel.rotation.y=sr*(1-e);desktopSidePanel.material.opacity=.28+.12*e;if(t<1){requestAnimationFrame(tick);return}if(done)done()})(t0);return;
+ }
+ const targetGroup=job==='desktop'?desktopModel:notebookModel;
+ const coords=installTargets[job]&&installTargets[job][id];
+ if(!coords){consume();if(done)done();return}
+ const obj=itemMesh(id);scene.add(obj);
+ const start=new THREE.Vector3();hand.getWorldPosition(start);obj.position.copy(start);obj.scale.multiplyScalar(.82);
+ const localTarget=new THREE.Vector3(coords[0],coords[1],coords[2]);const end=targetGroup.localToWorld(localTarget.clone());
+ consume();const t0=performance.now(),dur=state.reduced?80:620;
+ function tick(now){
+   const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);
+   obj.position.lerpVectors(start,end,e);obj.rotation.y+=.08;obj.rotation.x*=.95;
+   if(t<1){requestAnimationFrame(tick);return}
+   scene.remove(obj);targetGroup.add(obj);obj.position.copy(localTarget);const rot=installRotations[job]&&installRotations[job][id];if(rot)obj.rotation.set(rot[0],rot[1],rot[2]);else obj.rotation.set(0,0,0);installedVisuals[job].set(id,obj);if(done)done();
+ }
+ requestAnimationFrame(tick);
+}
+function performActionVisual(title,done){
+ const dur=state.reduced?100:520;
+ if(title==='Abrir gabinete'){
+   const start=desktopSidePanel.position.x,end=1.62,t0=performance.now();
+   (function tick(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);desktopSidePanel.position.x=start+(end-start)*e;desktopSidePanel.rotation.y=-e*.55;desktopSidePanel.material.opacity=.28-.10*e;if(t<1)requestAnimationFrame(tick);else if(done)done()})(t0);
+   return;
+ }
+ if(title==='Fechar gabinete'){
+   const start=desktopSidePanel.position.x,end=.715,t0=performance.now();
+   (function tick(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);desktopSidePanel.position.x=start+(end-start)*e;desktopSidePanel.rotation.y=(1-e)*.42;if(t<1)requestAnimationFrame(tick);else if(done)done()})(t0);return;
+ }
+ if(title==='Abrir carcaça'){
+   const sy=notebookBottom.position.y,sz=notebookBottom.position.z,t0=performance.now();
+   (function tick(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);notebookBottom.position.y=sy-.45*e;notebookBottom.position.z=sz+.35*e;notebookBottom.rotation.x=-.45*e;if(t<1)requestAnimationFrame(tick);else if(done)done()})(t0);return;
+ }
+ if(title==='Fechar carcaça'){
+   const sy=notebookBottom.position.y,sz=notebookBottom.position.z,t0=performance.now();
+   (function tick(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);notebookBottom.position.y=sy+(.02-sy)*e;notebookBottom.position.z=sz+(.02-sz)*e;notebookBottom.rotation.x*=(1-e);if(t<1)requestAnimationFrame(tick);else if(done)done()})(t0);return;
+ }
+ setTimeout(function(){if(done)done()},state.reduced?30:260);
+}
+function fail(msg){AudioFX.error();state.errors++;updateUI();showDialog('Prof. Carlos — orientação',msg,[{label:'Revisar e tentar novamente'}])}
+function advance(){AudioFX.success();state.step++;state.procedures++;updateUI();if(state.step>=steps().length)finishJob()}
+function finishJob(){
+ const j=state.job;AudioFX.power();state.done[j]=true;if(j==='desktop')dmon.material.color.set(0x2ea6a1);else nbscreen.material.color.set(0x2ea6a1);state.job=null;state.step=0;drop(true);updateUI();showDialog('Prof. Carlos — fechamento','Prática de '+(j==='desktop'?'Desktop':'Notebook')+' concluída. Você executou procedimentos, utilizou ferramentas, instalou componentes, revisou e testou o equipamento.',[{label:'Voltar ao laboratório'}])
+}
+function startJob(j){state.job=j;state.step=0;state.held=null;updateUI();showScene({badge:'Bancada selecionada',title:j==='desktop'?'Prática Desktop — montagem orientada':'Prática Notebook — manutenção orientada',text:j==='desktop'?'Nesta bancada você irá preparar a estação, instalar componentes, organizar cabos e validar o funcionamento do Desktop.':'Nesta bancada você irá abrir, atualizar e remontar o Notebook com foco em segurança, organização e compatibilidade.',points:[{title:'O que observar',text:j==='desktop'?'Gabinete, placa-mãe, processador, RAM, SSD, fonte, GPU e cabeamento.':'Parafusos, carcaça, bateria, memória SODIMM, SSD NVMe, Wi-Fi e cabo flex.'},{title:'Como executar',text:'Siga a Ordem de Serviço, interaja com ferramentas/componentes e confirme cada tarefa antes de avançar.'}],chip:j==='desktop'?'Bancada Desktop':'Bancada Notebook',footer:'A prática simula decisões do fazer profissional e prepara o aluno para a execução física supervisionada.',okLabel:'Iniciar prática',hideCancel:true}, function(){showDialog('Prof. Carlos — Ordem de Serviço',j==='desktop'?'Monte uma estação Desktop funcional, organizada e segura.':'Realize abertura, atualização e remontagem do Notebook.',[{label:'Começar tarefa',alt:true}])})}
+
+const inter=[];
+function addI(id,p,r,type){inter.push({id:id,pos:new THREE.Vector3(p[0],0,p[2]),radius:r,type:type})}
+addI('maya',[0,0,-5.3],2.1,'npc');addI('desktop',[-7,0,6.4],2.5,'bench');addI('notebook',[7,0,6.4],2.5,'bench');addI('toolShelf',[-11.5,0,5.7],2.0,'shelf');addI('componentShelf',[11.5,0,5.7],2.0,'shelf');
+Object.keys(spawn).forEach(function(id){addI(id,spawn[id],1.4,'item')});
+const blockers=[
+ {x:-7,z:6.4,w:5.4,d:2.5},{x:7,z:6.4,w:5.4,d:2.5},{x:0,z:-6.1,w:4.3,d:1.8},
+ {x:-11.5,z:5.7,w:3.6,d:1.1},{x:11.5,z:5.7,w:3.6,d:1.1}
+];
+[[-8,-3.5],[-4,-3.5],[4,-3.5],[8,-3.5],[-8,.5],[-4,.5],[4,.5],[8,.5]].forEach(function(p){blockers.push({x:p[0],z:p[1],w:3.3,d:1.7})});
+function blocked(x,z){
+ const r=.38;
+ return blockers.some(function(b){return x+r>b.x-b.w/2 && x-r<b.x+b.w/2 && z+r>b.z-b.d/2 && z-r<b.z+b.d/2});
+}
+let near=null;
+function promptText(o){
+ if(o.type==='npc')return 'E — conversar com Prof. Carlos';
+ if(o.type==='bench')return 'E — '+(state.job===o.id?'executar etapa':'usar bancada '+(o.id==='desktop'?'Desktop':'Notebook'));
+ if(o.type==='shelf')return 'E — abrir inventário de '+(o.id==='toolShelf'?'ferramentas':'componentes');
+ if(o.type==='item')return 'E — '+(state.held?'trocar por ':'pegar ')+defs[o.id].name;
+ return 'E — interagir'
+}
+function interact(){
+ if(state.dialog||state.inspect||state.cutscene||state.animating||!near)return;AudioFX.interact();
+ if(near.type==='npc'){
+  if(!state.mission)showScene({badge:'Prof. Carlos • orientação',title:'Boas-vindas ao laboratório do SENAC',text:'Nesta aula prática simulada, você vai percorrer o laboratório, conhecer as áreas, comparar Desktop e Notebook e executar tarefas com foco em manutenção e montagem de hardware.',points:[{title:'Ambientes interativos',text:'Bancada Desktop, bancada Notebook, área de ferramentas e área de componentes podem ser exploradas como parte da rotina profissional.'},{title:'Seu papel',text:'Analisar a Ordem de Serviço, selecionar itens corretos, executar procedimentos e refletir sobre decisões técnicas.'}],chip:'Ordem de Serviço',footer:'Ao continuar, você receberá a missão e poderá escolher a bancada para iniciar a aprendizagem.',okLabel:'Receber Ordem de Serviço',hideCancel:true}, function(){state.mission=true;updateUI();showDialog('Prof. Carlos','Missão liberada. Agora escolha uma bancada para iniciar a prática.');});
+  else if(state.done.desktop&&state.done.notebook)showDialog('Prof. Carlos — reflexão final','Você concluiu Desktop e Notebook. Compare modularidade, refrigeração, alimentação, cabos flex, bateria e espaço interno. A simulação prepara a tomada de decisão para a prática física supervisionada.');
+  else showDialog('Prof. Carlos','Continue a prática. Escolha a bancada que ainda não concluiu.');
+  return
+ }
+ if(near.type==='shelf'){
+  if(!state.job)return fail('Primeiro converse com Prof. Carlos e escolha uma bancada.');
+  const s=current();
+  if(!s)return;
+  if(s[0]!=='pickup') return fail('A etapa atual não solicita coleta de item. Observe a instrução e execute o procedimento correspondente na bancada.');
+  const wantsTool=['wrist','phillips','spudger','paste'].indexOf(s[1])!==-1;
+  if(near.id==='toolShelf' && wantsTool){openSelection('tools');return}
+  if(near.id==='componentShelf' && !wantsTool){openSelection('components');return}
+  return fail('Nesta etapa, dirija-se à área correta: '+(wantsTool?'Ferramentas':'Componentes')+'.');
+ }
+ if(near.type==='item'){
+  const s=current();if(!state.job)return fail('Primeiro receba a missão e inicie uma bancada.');
+  if(!s||s[0]!=='pickup')return fail('Neste momento a tarefa é: '+(s?s[2]:'seguir a Ordem de Serviço')+'. Conclua esse procedimento antes de pegar outra peça.');
+  if(near.id!==s[1])return fail('Você selecionou '+defs[near.id].name+', mas a etapa atual pede outra decisão. Compare a função dos componentes.');
+  animatePickup(near.id,function(){showDialog('Prof. Carlos — confirmação',defs[near.id].name+' selecionado. Pressione F para inspecionar características.',[{label:'Continuar',run:advance}])});return
+ }
+ if(near.type==='bench'){
+  if(!state.mission)return fail('Converse com Prof. Carlos primeiro.');
+  if(!state.job){if(state.done[near.id])return showDialog('Prof. Carlos','Essa bancada já foi concluída.');return startJob(near.id)}
+  if(state.job!==near.id)return fail('Conclua a Ordem de Serviço ativa antes de trocar de bancada.');
+  const s=current();if(!s)return;
+  if(s[0]==='install'){
+    if(state.held!==s[1])return fail('Para executar '+s[2]+', você precisa estar segurando '+defs[s[1]].name+'.');
+    const installId=s[1], installTitle=s[2];animateInstall(state.job,installId,function(){showScene({badge:'Instalação concluída',title:installTitle,text:'O componente foi movimentado da mão do estudante até a posição de instalação no equipamento.',points:[{title:'Função no sistema',text:defs[installId].info},{title:'Reflexão',text:'Observe onde o componente foi instalado e relacione sua posição à função, compatibilidade e manutenção.'}],chip:'Componente instalado',footer:'A instalação visual conecta a simulação ao procedimento técnico que será executado na bancada física.',okLabel:'Próxima etapa',hideCancel:true}, advance)});return
+  }
+  if(s[0]==='action'){
+    if(s[2].indexOf('Fixar')>=0&&state.held!=='phillips')return fail('Use a chave Phillips apropriada.');
+    if(s[2].indexOf('Aplicar pasta')>=0&&state.held!=='paste')return fail('Pegue a pasta térmica antes de aplicar.');
+    if(s[2].indexOf('Remover parafusos')>=0&&state.held!=='phillips')return fail('Use a chave Phillips para remover os parafusos.');
+    if(s[2].indexOf('Abrir carcaça')>=0&&state.held!=='spudger')return fail('Use a espátula plástica para abrir a carcaça.');
+    if(state.held==='paste')consume();
+    const actionTitle=s[2], actionDetail=s[3];performActionVisual(actionTitle,function(){showScene({badge:'Orientação do docente',title:actionTitle,text:'Prof. Carlos destaca o procedimento executado e chama atenção para a lógica técnica da etapa.',points:[{title:'Por que esta etapa importa',text:actionDetail},{title:'Conduta profissional',text:'Realize a ação com organização, segurança, conferência visual e atenção aos detalhes.'}],chip:'Foco pedagógico',footer:'A mudança visual no equipamento mostra o efeito do procedimento executado.',okLabel:'Confirmar e continuar',hideCancel:true}, advance)});return
+  }
+ }
+}
+
+const keys={},moves={up:false,down:false,left:false,right:false};
+const velocity=new THREE.Vector3();
+window.addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='e')interact();if(e.key.toLowerCase()==='h'){contextBox.classList.toggle('collapsed');document.getElementById('contextToggle').textContent=contextBox.classList.contains('collapsed')?'Abrir':'Minimizar'}if(e.key.toLowerCase()==='o'){taskPanel.classList.toggle('collapsed');document.getElementById('taskToggle').textContent=taskPanel.classList.contains('collapsed')?'Abrir':'Minimizar'}if(e.key.toLowerCase()==='f'){if(state.held)inspect(state.held);else showDialog('Prof. Carlos — inspeção','Você não está segurando nenhum item.')}if(e.key==='Escape'){ui.inspect.classList.remove('show');state.inspect=false;ui.dialog.classList.remove('show');state.dialog=false}});
+window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+document.querySelectorAll('[data-dir]').forEach(function(b){const d=b.dataset.dir;['pointerdown','touchstart'].forEach(function(ev){b.addEventListener(ev,function(e){e.preventDefault();moves[d]=true})});['pointerup','pointercancel','pointerleave','touchend'].forEach(function(ev){b.addEventListener(ev,function(e){e.preventDefault();moves[d]=false})})});
+document.getElementById('mobileE').onclick=interact;
+document.getElementById('closeInspect').onclick=function(){ui.inspect.classList.remove('show');state.inspect=false};
+document.getElementById('selectionClose').onclick=closeSelection;
+document.getElementById('selectionCancel').onclick=closeSelection;
+const contextBox=document.getElementById('contextBox'),taskPanel=document.getElementById('taskPanel');
+document.getElementById('contextToggle').onclick=function(){contextBox.classList.toggle('collapsed');this.textContent=contextBox.classList.contains('collapsed')?'Abrir':'Minimizar'};
+document.getElementById('taskToggle').onclick=function(){taskPanel.classList.toggle('collapsed');this.textContent=taskPanel.classList.contains('collapsed')?'Abrir':'Minimizar'};
+sceneUI.ok.onclick=function(){hideScene(true)};
+sceneUI.cancel.onclick=function(){hideScene(false)};
+document.getElementById('contrastBtn').onclick=function(){document.body.classList.toggle('high-contrast')};
+document.getElementById('textBtn').onclick=function(){document.body.classList.toggle('large-text')};
+document.getElementById('motionBtn').onclick=function(){document.body.classList.toggle('reduce-motion');state.reduced=!state.reduced};
+ui.soundBtn.onclick=function(){state.sound=!state.sound;AudioFX.enabled=state.sound;if(!state.sound)AudioFX.stopSpeech();this.textContent=state.sound?'🔊 Som':'🔇 Som';this.setAttribute('aria-pressed',state.sound?'true':'false');if(state.sound)AudioFX.click()};
+document.getElementById('cinematicSkip').onclick=function(){endIntroCutscene();AudioFX.click()};
+
+function resize(){const w=world.clientWidth,h=world.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+window.addEventListener('resize',resize);resize();
+
+
+const introOverlay=document.getElementById('introOverlay');
+const studentHud=document.getElementById('studentHud');
+function beginExperience(name){
+  state.studentName=name||window.TechForgeBoot.name||'Estudante';
+  studentHud.textContent=state.studentName;
+  if(introOverlay) introOverlay.style.display='none';
+  loader.style.display='none';
+  started=true;
+  clock.getDelta();
+  ui.missionTitle.textContent='Missão: procure o Prof. Carlos.';
+  const ctx=document.getElementById('contextText');
+  if(ctx) ctx.textContent='Olá, '+state.studentName+'. Explore o Laboratório de Manutenção de Hardware do SENAC e caminhe até o Prof. Carlos para receber sua Ordem de Serviço.';
+  updateUI();AudioFX.ensure();setTimeout(playIntroCutscene,350);
+}
+document.addEventListener('techforge:start',function(e){ beginExperience(e.detail&&e.detail.name); });
+
+const clock=new THREE.Clock();
+let started=false;
+function animate(){
+ if(!started){requestAnimationFrame(animate);return}
+ const dt=Math.min(clock.getDelta(),.04);
+ if(!state.dialog&&!state.inspect&&!state.cutscene&&!state.animating&&introOverlay.style.display==='none'){
+  let dx=0,dz=0;if(keys.a||keys.arrowleft||moves.left)dx--;if(keys.d||keys.arrowright||moves.right)dx++;if(keys.w||keys.arrowup||moves.up)dz--;if(keys.s||keys.arrowdown||moves.down)dz++;
+  const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
+  const targetX=dx*4.2,targetZ=dz*4.2;
+  const smooth=1-Math.pow(0.001,dt);
+  velocity.x=THREE.MathUtils.lerp(velocity.x,targetX,smooth);
+  velocity.z=THREE.MathUtils.lerp(velocity.z,targetZ,smooth);
+  if(!dx) velocity.x=THREE.MathUtils.lerp(velocity.x,0,smooth);
+  if(!dz) velocity.z=THREE.MathUtils.lerp(velocity.z,0,smooth);
+  const nx=THREE.MathUtils.clamp(player.position.x+velocity.x*dt,-12.8,12.8), nz=THREE.MathUtils.clamp(player.position.z+velocity.z*dt,-8.6,8.6);
+  if(!blocked(nx,player.position.z))player.position.x=nx;else velocity.x*=.18;
+  if(!blocked(player.position.x,nz))player.position.z=nz;else velocity.z*=.18;
+  const moving=Math.abs(velocity.x)+Math.abs(velocity.z)>.08;
+  if(moving){
+    const targetRot=Math.atan2(velocity.x,velocity.z);
+    player.rotation.y=THREE.MathUtils.lerp(player.rotation.y,targetRot,state.reduced?1:.14);
+    const swing=Math.sin(performance.now()*.012)*.38;
+    leftArmPivot.rotation.x=swing;
+    rightArmPivot.rotation.x=state.held?-0.85:-swing;
+    leg1.rotation.x=-swing*.55; leg2.rotation.x=swing*.55;
+    if(!state.reduced)torso.position.y=1.15+Math.sin(performance.now()*.009)*.03;AudioFX.step();
+  }else{
+    leftArmPivot.rotation.x=THREE.MathUtils.lerp(leftArmPivot.rotation.x,0,.14);
+    rightArmPivot.rotation.x=THREE.MathUtils.lerp(rightArmPivot.rotation.x,state.held?-0.85:0,.14);
+    leg1.rotation.x=THREE.MathUtils.lerp(leg1.rotation.x,0,.14);
+    leg2.rotation.x=THREE.MathUtils.lerp(leg2.rotation.x,0,.14);
+    torso.position.y=THREE.MathUtils.lerp(torso.position.y,1.15,.12);
+  }
+  if(state.held && hand.children[0]){
+    hand.children[0].rotation.y += 0.05;
+    hand.children[0].rotation.z = Math.sin(performance.now()*.01)*.12;
+    hand.children[0].position.y = .08 + Math.sin(performance.now()*.01)*.03;
+  }
+ }
+ maya.rotation.y = Math.sin(performance.now()*.0008)*0.16;
+ armR.rotation.x = -.35 + Math.sin(performance.now()*.0012)*.18;
+ armL.rotation.x = .1 - Math.sin(performance.now()*.0012)*.12;
+ if(state.cutscene){const cpos=new THREE.Vector3(0,3.2,-1.45);camera.position.lerp(cpos,state.reduced?1:.06);camera.lookAt(0,1.45,-5.3)}else{const des=new THREE.Vector3(player.position.x,6.7,player.position.z+8.3);camera.position.lerp(des,state.reduced?1:.055);camera.lookAt(player.position.x,1.45,player.position.z-2.4)}
+ near=null;let best=999;inter.forEach(function(o){const d=player.position.distanceTo(o.pos);if(d<o.radius&&d<best){if(o.type==='item'&&worldItems[o.id]&&!worldItems[o.id].visible)return;near=o;best=d}});
+ if(near&&!state.dialog&&!state.inspect){ui.prompt.textContent=promptText(near);ui.prompt.style.display='block'}else ui.prompt.style.display='none';
+ if(near&&near.type==='shelf'&&!state.dialog&&!state.inspect)renderInventoryPreview(near);else renderInventoryPreview(null);
+ renderer.render(scene,camera);requestAnimationFrame(animate)
+}
+updateUI();
+window.TechForgeBoot.ready=true;
+loaderBar.style.width='100%';loaderText.textContent='Laboratório pronto.';loader.style.display='none';
+if(window.TechForgeBoot.started){beginExperience(window.TechForgeBoot.name);}
+animate();
+})();
+</script>
+
+<script>
+window.addEventListener('error', function(e){
+  var fb=document.getElementById('fallback');
+  var ld=document.getElementById('loader');
+  if(fb && ld && (String(e.message||'').toLowerCase().indexOf('module')>=0 || String(e.filename||'').indexOf('three')>=0)){
+    ld.style.display='none';
+    fb.style.display='block';
+    fb.innerHTML='<h2>Não foi possível carregar o Three.js.</h2><p>Use o arquivo <b>INICIAR_JOGO.bat</b> incluído na pasta do projeto. Ele abre o jogo pelo servidor local correto.</p>';
+  }
+});
+</script>
+
+</body>
+</html>
