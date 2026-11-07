@@ -109,7 +109,7 @@ kbd{font:800 .7rem/1 inherit;border:1.5px solid currentColor;border-radius:0.25r
 @keyframes pulse{50%{box-shadow:0 0 0 0.3125rem var(--acc)}}
 
 /* painel do chamado (gaveta) — só ocupa a coluna da direita */
-#side{grid-column:2;grid-row:2;align-self:start;max-height:100%;width:min(21.25rem,40vw);min-height:0;overflow-y:auto;background:var(--panel);border:2px solid var(--hudLine);border-radius:0.75rem;box-shadow:var(--shadow);padding:0.625rem 0.75rem;display:flex;flex-direction:column;gap:0.375rem}
+#side{grid-column:2;grid-row:2;align-self:start;max-height:100%;width:min(21.25rem,calc(var(--vw,100vw)*0.40));min-height:0;overflow-y:auto;background:var(--panel);border:2px solid var(--hudLine);border-radius:0.75rem;box-shadow:var(--shadow);padding:0.625rem 0.75rem;display:flex;flex-direction:column;gap:0.375rem}
 .drawer-head{display:flex;justify-content:space-between;align-items:center}
 .x{border:2px solid var(--line);background:transparent;border-radius:0.5rem;width:1.875rem;height:1.875rem;font-weight:900}
 .kicker{font-size:.7rem;font-weight:900;letter-spacing:.09em;color:var(--cy)}
@@ -242,7 +242,7 @@ body.hc .modal{background:rgba(0,0,0,.95)}
 .minigame-head p{font-size:.9rem;color:var(--dim);margin-top:2px;min-height:2.6em}
 .minigame-step-tag{font-size:.74rem;font-weight:900;color:var(--cy)}
 .minigame-canvas-wrap{margin-top:0.5rem;display:grid;place-items:center}
-#mgCanvas{display:block;width:min(100%,calc((100vh - 20.625rem)*1.7778));min-width:18.75rem;aspect-ratio:16/9;border:2px solid var(--hudLine);border-radius:0.625rem;background:#0d1f2d;cursor:default;touch-action:none}
+#mgCanvas{display:block;width:min(100%,calc((var(--vh,100vh) - 20.625rem)*1.7778));min-width:18.75rem;aspect-ratio:16/9;border:2px solid var(--hudLine);border-radius:0.625rem;background:#0d1f2d;cursor:default;touch-action:none}
 .mg-msg{min-height:3.2em;margin-top:0.5rem;padding:0.5rem 0.75rem;border-radius:0.625rem;font-size:.92rem;line-height:1.4;color:var(--dim);background:var(--panel2);border:2px solid var(--line)}
 .mg-msg.bad{background:var(--badBg);border-color:var(--bad);color:var(--txt)}
 .mg-msg.ok{background:var(--okBg);border-color:var(--ok);color:var(--txt)}
@@ -259,7 +259,7 @@ body.hc #introOverlay{background:#000}
 .intro-badge.a{display:inline-grid;place-items:center;padding:0.25rem 0.625rem;border-radius:0.625rem;background:#fff;border:1px solid var(--line)}
 .intro-badge.a img{height:2.125rem;width:auto;display:block}
 .intro-badge.b{background:var(--panel2);border:2px solid var(--line);border-radius:62.4375rem;padding:0.3125rem 0.75rem;font-size:.78rem;font-weight:800}
-.intro-head h2{margin:0.625rem 0 0.25rem;font-size:clamp(1.3rem,3.4vw,1.7rem);line-height:1.2;color:var(--cy)}
+.intro-head h2{margin:0.625rem 0 0.25rem;font-size:clamp(1.3rem,calc(var(--vw,100vw)*0.034),1.7rem);line-height:1.2;color:var(--cy)}
 .intro-lead{margin:0.375rem auto 0.75rem;max-width:40rem;line-height:1.55;color:var(--dim);font-size:.95rem}
 .intro-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:0.75rem;text-align:left}
 .istep{background:var(--panel2);border:2px solid var(--line);border-radius:0.75rem;padding:0.5rem 0.625rem}
@@ -280,24 +280,24 @@ body.hc #introOverlay{background:#000}
 .intro-foot{font-size:.78rem;color:var(--mut);margin-top:0.625rem}
 
 /* ---------- janelas estreitas (desktop) ---------- */
-@media(max-width:600px) and (orientation:portrait){
-  #hud{grid-template-columns:minmax(0,1fr)}
-  #hudTop{grid-template-columns:minmax(0,1fr) auto}
-  #hudCenter{grid-column:1/-1;grid-row:2;align-items:stretch}
-  #side{grid-column:1;width:auto}
-  .tally .t-done{display:none}
-  #dock{grid-template-columns:auto minmax(0,1fr)}
-  .dock-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
-}
-@media(max-width:820px) and (orientation:portrait){
-  .intro-steps{grid-template-columns:1fr}
-  .brand p{display:none}
-}
-@media(max-height:620px){
-  .intro-lead{font-size:.86rem;margin:0.25rem auto 0.5rem}
-  .intro-card{padding:0.75rem 1rem}
-  #dock{max-height:34vh}
-}
+/* antes: @media (max-width:600px) and (orientation:portrait) (agora pela ÁREA VISÍVEL) */
+  html.q-narrowp #hud{grid-template-columns:minmax(0,1fr)}
+  html.q-narrowp #hudTop{grid-template-columns:minmax(0,1fr) auto}
+  html.q-narrowp #hudCenter{grid-column:1/-1;grid-row:2;align-items:stretch}
+  html.q-narrowp #side{grid-column:1;width:auto}
+  html.q-narrowp .tally .t-done{display:none}
+  html.q-narrowp #dock{grid-template-columns:auto minmax(0,1fr)}
+  html.q-narrowp .dock-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
+
+/* antes: @media (max-width:820px) and (orientation:portrait) (agora pela ÁREA VISÍVEL) */
+  html.q-midp .intro-steps{grid-template-columns:1fr}
+  html.q-midp .brand p{display:none}
+
+/* antes: @media (max-height:620px) (agora pela ÁREA VISÍVEL) */
+  html.q-h620 .intro-lead{font-size:.86rem;margin:0.25rem auto 0.5rem}
+  html.q-h620 .intro-card{padding:0.75rem 1rem}
+  html.q-h620 #dock{max-height:34vh}
+
 
 /* ---------- celular / tablet (toque): sempre na horizontal ---------- */
 body.touch{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
@@ -317,55 +317,55 @@ body.touch #topbar{padding:3px 0.625rem;padding-left:max(0.625rem,env(safe-area-
 body.touch .brand p{display:none}
 body.touch #main{padding:0.25rem;padding-left:max(0.25rem,env(safe-area-inset-left));padding-right:max(0.25rem,env(safe-area-inset-right));padding-bottom:max(0.25rem,env(safe-area-inset-bottom))}
 body.touch #hud{padding:0.375rem;gap:0.375rem}
-body.touch #side{width:min(20rem,46vw)}
+body.touch #side{width:min(20rem,calc(var(--vw,100vw)*0.46))}
 body.touch #execBtn{display:none!important}
-@media(max-height:500px){
-  .modal{padding:0.375rem}
-  .card-lg{padding:0.625rem 0.875rem;border-radius:0.75rem}
-  .modal-head{margin-bottom:0.375rem}
-  .modal-head h3{font-size:1.02rem}
-  .lesson-text{font-size:.88rem;margin-bottom:0.375rem}
-  .lpoint{padding:0.375rem 0.5625rem}.lpoint span,.lpoint ol{font-size:.8rem;line-height:1.35}
-  .lesson-quiz{margin-top:0.375rem;gap:0.3125rem}.lesson-quiz .q{font-size:.9rem}
-  .opt{padding:0.4375rem 0.625rem;font-size:.86rem}
-  .lesson-note{margin-top:0.375rem;padding:0.375rem 0.625rem;font-size:.86rem}
-  .modal-actions{margin-top:0.5rem}
-  .card-mg{padding:0.5rem 0.75rem 0.625rem;border-radius:0.75rem;width:min(61.25rem,100%)}
-  .minigame-head h3{font-size:.95rem}
-  .minigame-head p{font-size:.8rem;min-height:0}
-  .minigame-canvas-wrap{margin-top:0.25rem}
-  /* minigame: tela grande à esquerda, mensagem e botões à direita */
+/* antes: @media (max-height:500px) (agora pela ÁREA VISÍVEL) */
+  html.q-h500 .modal{padding:0.375rem}
+  html.q-h500 .card-lg{padding:0.625rem 0.875rem;border-radius:0.75rem}
+  html.q-h500 .modal-head{margin-bottom:0.375rem}
+  html.q-h500 .modal-head h3{font-size:1.02rem}
+  html.q-h500 .lesson-text{font-size:.88rem;margin-bottom:0.375rem}
+  html.q-h500 .lpoint{padding:0.375rem 0.5625rem}html.q-h500 .lpoint span,html.q-h500 .lpoint ol{font-size:.8rem;line-height:1.35}
+  html.q-h500 .lesson-quiz{margin-top:0.375rem;gap:0.3125rem}html.q-h500 .lesson-quiz .q{font-size:.9rem}
+  html.q-h500 .opt{padding:0.4375rem 0.625rem;font-size:.86rem}
+  html.q-h500 .lesson-note{margin-top:0.375rem;padding:0.375rem 0.625rem;font-size:.86rem}
+  html.q-h500 .modal-actions{margin-top:0.5rem}
+  html.q-h500 .card-mg{padding:0.5rem 0.75rem 0.625rem;border-radius:0.75rem;width:min(61.25rem,100%)}
+  html.q-h500 .minigame-head h3{font-size:.95rem}
+  html.q-h500 .minigame-head p{font-size:.8rem;min-height:0}
+  html.q-h500 .minigame-canvas-wrap{margin-top:0.25rem}
+  html.q-h500 /* minigame: tela grande à esquerda,html.q-h500 mensagem e botões à direita */
   .card-mg{display:grid;grid-template-columns:auto minmax(10.625rem,1fr);grid-template-rows:auto 1fr auto;column-gap:0.75rem}
-  .minigame-head{grid-column:1/-1}
-  .minigame-canvas-wrap{grid-column:1;grid-row:2/span 2}
-  #mgMsg{grid-column:2;grid-row:2;align-self:start;margin-top:0.25rem}
-  .minigame-foot{grid-column:2;grid-row:3;flex-direction:column;align-items:stretch;gap:0.375rem}
-  .minigame-progress{flex:0 0 0.5625rem}
-  #mgCanvas{width:min(64vw,calc((100vh - 7.5rem)*1.7778));min-width:0}
-  .mg-msg{min-height:0;margin-top:0.3125rem;padding:0.3125rem 0.625rem;font-size:.8rem}
-  .minigame-foot{margin-top:0.3125rem}
-  .intro-card{padding:0.625rem 1rem}
-  .intro-head h2{margin:0.25rem 0 2px;font-size:1.15rem}
-  .intro-lead{display:none}
-  .intro-steps{display:none}
-  .char-card{padding:0.3125rem 0.625rem}.char-card canvas{width:2.75rem;height:2.75rem}
-  .intro-foot{display:none}
-  .intro-actions{margin-top:0.5rem}
-  .board-grid{gap:0.375rem}.ticket{padding:0.3125rem 0.5rem;margin-bottom:0.3125rem}.ticket span{display:none}
-  /* cartão do professor em 2 colunas: explicação à esquerda, pergunta à direita */
+  html.q-h500 .minigame-head{grid-column:1/-1}
+  html.q-h500 .minigame-canvas-wrap{grid-column:1;grid-row:2/span 2}
+  html.q-h500 #mgMsg{grid-column:2;grid-row:2;align-self:start;margin-top:0.25rem}
+  html.q-h500 .minigame-foot{grid-column:2;grid-row:3;flex-direction:column;align-items:stretch;gap:0.375rem}
+  html.q-h500 .minigame-progress{flex:0 0 0.5625rem}
+  html.q-h500 #mgCanvas{width:min(calc(var(--vw,100vw)*0.64),calc((var(--vh,100vh) - 7.5rem)*1.7778));min-width:0}
+  html.q-h500 .mg-msg{min-height:0;margin-top:0.3125rem;padding:0.3125rem 0.625rem;font-size:.8rem}
+  html.q-h500 .minigame-foot{margin-top:0.3125rem}
+  html.q-h500 .intro-card{padding:0.625rem 1rem}
+  html.q-h500 .intro-head h2{margin:0.25rem 0 2px;font-size:1.15rem}
+  html.q-h500 .intro-lead{display:none}
+  html.q-h500 .intro-steps{display:none}
+  html.q-h500 .char-card{padding:0.3125rem 0.625rem}html.q-h500 .char-card canvas{width:2.75rem;height:2.75rem}
+  html.q-h500 .intro-foot{display:none}
+  html.q-h500 .intro-actions{margin-top:0.5rem}
+  html.q-h500 .board-grid{gap:0.375rem}html.q-h500 .ticket{padding:0.3125rem 0.5rem;margin-bottom:0.3125rem}html.q-h500 .ticket span{display:none}
+  html.q-h500 /* cartão do professor em 2 colunas: explicação à esquerda,html.q-h500 pergunta à direita */
   .card-lg.lesson{width:min(68.75rem,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:0.875rem;align-items:start}
-  .lesson .modal-head,.lesson .modal-actions{grid-column:1/-1}
-  .lesson .lesson-text,.lesson .lesson-points{grid-column:1}
-  .lesson .lesson-points{grid-template-columns:1fr}
-  .lesson .lesson-quiz{grid-column:2;grid-row:2/span 2;margin-top:0}
-  .lesson .lesson-note{grid-row:4}
-  .lesson .lesson-note{grid-column:2}
-  .lesson:has(.lesson-quiz:empty){grid-template-columns:1fr}
-  .lesson:has(.lesson-quiz:empty) .lesson-points{grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr))}
-}
+  html.q-h500 .lesson .modal-head,html.q-h500 .lesson .modal-actions{grid-column:1/-1}
+  html.q-h500 .lesson .lesson-text,html.q-h500 .lesson .lesson-points{grid-column:1}
+  html.q-h500 .lesson .lesson-points{grid-template-columns:1fr}
+  html.q-h500 .lesson .lesson-quiz{grid-column:2;grid-row:2/span 2;margin-top:0}
+  html.q-h500 .lesson .lesson-note{grid-row:4}
+  html.q-h500 .lesson .lesson-note{grid-column:2}
+  html.q-h500 .lesson:has(.lesson-quiz:empty){grid-template-columns:1fr}
+  html.q-h500 .lesson:has(.lesson-quiz:empty) .lesson-points{grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr))}
+
 /* aviso de girar o aparelho */
 #rotateOverlay{display:none;position:fixed;inset:0;z-index:300;background:#050b12;color:#fff;align-items:center;justify-content:center;text-align:center;padding:1.5rem}
-@media(orientation:portrait){body.touch #rotateOverlay{display:flex}}
+/* antes: @media (orientation:portrait) (agora pela ÁREA VISÍVEL) */html.q-portrait body.touch #rotateOverlay{display:flex}
 .rot-card{max-width:20rem;display:flex;flex-direction:column;align-items:center;gap:0.75rem}
 .rot-card h2{font-size:1.5rem}
 .rot-card p{font-size:1rem;line-height:1.45}
@@ -385,8 +385,8 @@ body.touch #execBtn{display:none!important}
 .toast{font-weight:800}
 
 /* ---------- nada passa da tela: cartões são reduzidos (zoom) para caber ---------- */
-html,body{max-width:100vw;overflow:hidden}
-body{height:100vh;height:100dvh}
+html,body{max-width:var(--vw,100vw);overflow:hidden}
+
 .modal>*{flex:0 0 auto;max-width:none}
 #side{overflow:hidden!important}
 #dock{overflow:hidden!important;max-height:none!important}
@@ -396,7 +396,7 @@ body{height:100vh;height:100dvh}
 #edgeArrow{display:none;position:absolute;z-index:9;width:0;height:0;pointer-events:none;border-top:0.9rem solid transparent;border-bottom:0.9rem solid transparent;border-left:1.5rem solid #0a5cab;filter:drop-shadow(0 0 0.15rem #fff) drop-shadow(0 0.1rem 0.3rem rgba(0,0,0,.6));animation:edgeP 1s ease-in-out infinite}
 @keyframes edgeP{50%{opacity:.55}}
 
-@media(max-width:560px) and (orientation:portrait){.board-grid{grid-template-columns:1fr}}
+/* antes: @media (max-width:560px) and (orientation:portrait) (agora pela ÁREA VISÍVEL) */html.q-n560p .board-grid{grid-template-columns:1fr}
 #feedLog li:nth-child(n+4){display:none}
 
 /* =====================================================================
@@ -406,64 +406,71 @@ body{height:100vh;height:100dvh}
    ===================================================================== */
 #hudRight{display:flex;align-items:flex-start;gap:0.375rem}
 #hudRight .top-right .pill{color:var(--txt);border-color:var(--hudLine);background:var(--hud);box-shadow:var(--shadow);border-radius:0.625rem;padding:0.375rem 0.625rem;font-size:0.86rem}
-@media (max-height:480px), (max-width:700px) and (orientation:landscape){
-  body.touch #topbar, body.compact #topbar{display:none}
-  body.touch #main, body.compact #main{padding:0;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)}
-  body.touch #gameShell, body.compact #gameShell{border:0;border-radius:0;min-height:0}
-  #hud{padding:0.375rem;gap:0.375rem}
-  #hudTop{gap:0.375rem}
-  .chip{font-size:0.8rem}
-  #hudWho{padding:0.125rem 0.5rem 0.125rem 0.125rem;gap:0.375rem}
-  #whoFace{width:1.25rem;height:1.25rem}
-  .obj{padding:0.1875rem 0.625rem;border-width:2px;gap:0.375rem;flex-wrap:nowrap}
-  .obj b{font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .obj em{display:none}
-  .obj-phase{font-size:0.66rem;padding:0 0.375rem}
-  .case-btn{padding:0.3125rem 0.625rem}
-  .case-btn kbd{display:none}
-  .toast{font-size:0.78rem;padding:0.1875rem 0.625rem}
-  /* fala do professor: uma faixa compacta, sem foto, botão ao lado */
+/* antes: @media (max-height:480px), (max-width:700px) and (orientation:landscape) (agora pela ÁREA VISÍVEL) */
+  html.q-compact body.touch #topbar,html.q-compact body.compact #topbar{display:none}
+  html.q-compact body.touch #main,html.q-compact body.compact #main{padding:0;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)}
+  html.q-compact body.touch #gameShell,html.q-compact body.compact #gameShell{border:0;border-radius:0;min-height:0}
+  html.q-compact #hud{padding:0.375rem;gap:0.375rem}
+  html.q-compact #hudTop{gap:0.375rem}
+  html.q-compact .chip{font-size:0.8rem}
+  html.q-compact #hudWho{padding:0.125rem 0.5rem 0.125rem 0.125rem;gap:0.375rem}
+  html.q-compact #whoFace{width:1.25rem;height:1.25rem}
+  html.q-compact .obj{padding:0.1875rem 0.625rem;border-width:2px;gap:0.375rem;flex-wrap:nowrap}
+  html.q-compact .obj b{font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html.q-compact .obj em{display:none}
+  html.q-compact .obj-phase{font-size:0.66rem;padding:0 0.375rem}
+  html.q-compact .case-btn{padding:0.3125rem 0.625rem}
+  html.q-compact .case-btn kbd{display:none}
+  html.q-compact .toast{font-size:0.78rem;padding:0.1875rem 0.625rem}
+  html.q-compact /* fala do professor: uma faixa compacta,html.q-compact sem foto,html.q-compact botão ao lado */
   #dock{padding:0.3125rem 0.625rem;gap:0.5rem;grid-template-columns:minmax(0,1fr) auto;border-left-width:0.25rem}
-  #dockFace{display:none}
-  .dock-body strong{font-size:0.7rem}
-  .dock-body p{font-size:0.84rem;line-height:1.3}
-  .dock-actions{flex-direction:row}
-  .dock-actions button{padding:0.375rem 0.75rem;font-size:0.82rem}
-  .btn{padding:0.375rem 0.75rem;font-size:0.82rem}
-  .prompt-chip{padding:0.3125rem 0.75rem;font-size:0.82rem}
-  body.touch .joy{width:5.6rem;height:5.6rem;margin:0 0.5rem 0 0}
-  body.touch .joy-knob{width:2.4rem;height:2.4rem}
-  body.touch .mobile-e{width:3.9rem;height:3.9rem;font-size:1.35rem;margin:0 0 0.25rem 0.5rem}
-  /* painel do chamado: ocupa a lateral direita por inteiro e esconde o rodapé enquanto aberto */
-  #side{grid-row:2/4;width:min(19rem,48vw);padding:0.5rem 0.625rem;gap:0.25rem}
-  #side h2{font-size:0.9rem}
-  #hud:has(#side:not([hidden])) #hudBottom{visibility:hidden}
-  #feedLog li:nth-child(n+3){display:none}
-  /* cartões e quadro sempre com 2 colunas na horizontal */
+  html.q-compact #dockFace{display:none}
+  html.q-compact .dock-body strong{font-size:0.7rem}
+  html.q-compact .dock-body p{font-size:0.84rem;line-height:1.3}
+  html.q-compact .dock-actions{flex-direction:row}
+  html.q-compact .dock-actions button{padding:0.375rem 0.75rem;font-size:0.82rem}
+  html.q-compact .btn{padding:0.375rem 0.75rem;font-size:0.82rem}
+  html.q-compact .prompt-chip{padding:0.3125rem 0.75rem;font-size:0.82rem}
+  html.q-compact body.touch .joy{width:5.6rem;height:5.6rem;margin:0 0.5rem 0 0}
+  html.q-compact body.touch .joy-knob{width:2.4rem;height:2.4rem}
+  html.q-compact body.touch .mobile-e{width:3.9rem;height:3.9rem;font-size:1.35rem;margin:0 0 0.25rem 0.5rem}
+  html.q-compact /* painel do chamado: ocupa a lateral direita por inteiro e esconde o rodapé enquanto aberto */
+  #side{grid-row:2/4;width:min(19rem,calc(var(--vw,100vw)*0.48));padding:0.5rem 0.625rem;gap:0.25rem}
+  html.q-compact #side h2{font-size:0.9rem}
+  html.q-compact #hud:has(#side:not([hidden])) #hudBottom{visibility:hidden}
+  html.q-compact #feedLog li:nth-child(n+3){display:none}
+  html.q-compact /* cartões e quadro sempre com 2 colunas na horizontal */
   .board-grid{grid-template-columns:1fr 1fr}
-  .ticket span{display:none}
-  .modal{padding:0.375rem}
-}
+  html.q-compact .ticket span{display:none}
+  html.q-compact .modal{padding:0.375rem}
+
 
 /* minigame em tela baixa: tela do minigame à esquerda (o maior possível),
    título, instrução, mensagens e botões numa coluna à direita */
-@media (max-height:480px){
-  .card-mg{width:100%;grid-template-columns:auto minmax(9.5rem,1fr);grid-template-rows:auto auto 1fr auto;align-items:start;padding:0.4rem 0.5rem}
-  .minigame-head{grid-column:2;grid-row:1/span 2}
-  .mg-top{flex-wrap:wrap;gap:0.25rem}
-  .minigame-head h3{font-size:0.9rem}
-  .minigame-head p{font-size:0.78rem;line-height:1.3}
-  .minigame-canvas-wrap{grid-column:1;grid-row:1/span 4;margin:0}
-  #mgCanvas{width:min(calc(100vw - 12.5rem),calc((100vh - 1.4rem)*1.7778))}
-  #mgMsg{grid-column:2;grid-row:3;font-size:0.78rem;line-height:1.3}
-  #mgMsg:empty{visibility:hidden}
-  .minigame-foot{grid-column:2;grid-row:4}
-}
-@media (max-height:300px){
-  #side .kicker.sec:last-of-type,#feedLog{display:none}
-  .lesson-text{font-size:.82rem}
-}
+/* antes: @media (max-height:480px) (agora pela ÁREA VISÍVEL) */
+  html.q-h480 .card-mg{width:100%;grid-template-columns:auto minmax(9.5rem,1fr);grid-template-rows:auto auto 1fr auto;align-items:start;padding:0.4rem 0.5rem}
+  html.q-h480 .minigame-head{grid-column:2;grid-row:1/span 2}
+  html.q-h480 .mg-top{flex-wrap:wrap;gap:0.25rem}
+  html.q-h480 .minigame-head h3{font-size:0.9rem}
+  html.q-h480 .minigame-head p{font-size:0.78rem;line-height:1.3}
+  html.q-h480 .minigame-canvas-wrap{grid-column:1;grid-row:1/span 4;margin:0}
+  html.q-h480 #mgCanvas{width:min(calc(var(--vw,100vw) - 12.5rem),calc((var(--vh,100vh) - 1.4rem)*1.7778))}
+  html.q-h480 #mgMsg{grid-column:2;grid-row:3;font-size:0.78rem;line-height:1.3}
+  html.q-h480 #mgMsg:empty{visibility:hidden}
+  html.q-h480 .minigame-foot{grid-column:2;grid-row:4}
+
+/* antes: @media (max-height:300px) (agora pela ÁREA VISÍVEL) */
+  html.q-h300 #side .kicker.sec:last-of-type,html.q-h300 #feedLog{display:none}
+  html.q-h300 .lesson-text{font-size:.82rem}
+
 #hudRight .top-right .pill,#hudRight .case-btn{font-size:0.8rem;line-height:1.2;padding:0.3125rem 0.625rem;font-weight:800;border-width:2px}
+
+/* ---------- o jogo inteiro vive só na parte VISÍVEL da tela ----------
+   (o Canva pode deixar o iframe mais alto que a tela do celular; o JS mede a
+   parte visível e o corpo da página se encaixa nela — nada fica para rolar) */
+html{overflow:hidden;height:100%}
+body{position:fixed!important;left:0;top:var(--vt,0px);width:var(--vw,100vw);height:var(--vh,100vh);margin:0;transform:translateZ(0);overflow:hidden}
+.modal{position:fixed;inset:0}
 
 </style>
 </head>
@@ -654,14 +661,74 @@ window.TechForgeBoot = { started:false, name:'', gender:'m', ready:false };
     var el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;
     try{var p=req&&!document.fullscreenElement?req.call(el,{navigationUI:'hide'}):null;if(p&&p.then)p.then(lockLandscape,lockLandscape);else lockLandscape()}catch(e){lockLandscape()}
   };
-  /* ---------- tudo cabe na janela: escala da interface + ajuste dos cartões ---------- */
+  /* ---------- ÁREA VISÍVEL (mesma solução do simulador de redes) ----------
+     No celular o Canva pode deixar o iframe do jogo mais alto (ou mais largo)
+     do que a tela. Faixas invisíveis + IntersectionObserver dizem qual parte do
+     iframe está realmente visível; o jogo inteiro (HUD, janelas, minigames) é
+     encaixado nessa parte. Assim nada fica para baixo e não é preciso rolar. */
   var root=document.documentElement;
+  var VIS={top:0,left:0,w:window.innerWidth,h:window.innerHeight,k:1,ok:false};
+  window.TechForgeVis=VIS;
+  var stripsY=[],stripsX=[],rectsY=[],rectsX=[],io=null;
+  function applyVis(){
+    var iw=window.innerWidth,ih=window.innerHeight,full=document.fullscreenElement||document.webkitFullscreenElement;
+    var t=0,l=0,w=iw,hh=ih;
+    if(!full){
+      var y0=Infinity,y1=-Infinity,x0=Infinity,x1=-Infinity;
+      rectsY.forEach(function(r){if(r){y0=Math.min(y0,r.a);y1=Math.max(y1,r.b)}});
+      rectsX.forEach(function(r){if(r){x0=Math.min(x0,r.a);x1=Math.max(x1,r.b)}});
+      if(y1>y0&&y1-y0>=120&&y1-y0<ih-2){t=Math.max(0,Math.round(y0));hh=Math.round(y1-y0)}
+      if(x1>x0&&x1-x0>=160&&x1-x0<iw-2){l=Math.max(0,Math.round(x0));w=Math.round(x1-x0)}
+    }
+    var changed=t!==VIS.top||l!==VIS.left||w!==VIS.w||hh!==VIS.h;
+    VIS.top=t;VIS.left=l;VIS.w=w;VIS.h=hh;
+    root.style.setProperty('--vt',t+'px');root.style.setProperty('--vw',w+'px');root.style.setProperty('--vh',hh+'px');
+    document.body.style.left=l+'px';
+    // "media queries" calculadas pela área visível (não pelo tamanho do iframe)
+    var por=hh>w,touch=document.body.classList.contains('touch');
+    var Q={'q-portrait':por,'q-narrowp':por&&w<=600,'q-midp':por&&w<=820,'q-n560p':por&&w<=560,
+      'q-h620':hh<=620,'q-h500':hh<=500,'q-h480':hh<=480,'q-h300':hh<=300,'q-compact':hh<=480||(!por&&w<=700)};
+    for(var k in Q)root.classList.toggle(k,!!Q[k]);
+    if(changed){if(window.TechForgeFit)window.TechForgeFit();try{window.dispatchEvent(new Event('techforge:vis'))}catch(e){}}
+  }
+  function mkStrip(vertical,pos,size){
+    var f=document.createElement('div');
+    f.style.cssText='position:absolute;pointer-events:none;visibility:hidden;'+(vertical?('left:0;width:1px;top:'+pos+'px;height:'+size+'px'):('top:0;height:1px;left:'+pos+'px;width:'+size+'px'));
+    f._v=vertical;f._p=pos;f._s=size;root.appendChild(f);io.observe(f);return f;
+  }
+  function buildStrips(){
+    if(!io)return;
+    stripsY.concat(stripsX).forEach(function(f){io.unobserve(f);f.remove()});
+    stripsY=[];stripsX=[];rectsY=[];rectsX=[];
+    var ih=window.innerHeight,iw=window.innerWidth,y,x;
+    for(y=0;y<ih;y+=40){stripsY.push(mkStrip(true,y,Math.min(40,ih-y)));rectsY.push(null)}
+    for(x=0;x<iw;x+=40){stripsX.push(mkStrip(false,x,Math.min(40,iw-x)));rectsX.push(null)}
+  }
+  if(window.IntersectionObserver){
+    io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        var f=e.target,list=f._v?stripsY:stripsX,rs=f._v?rectsY:rectsX,i=list.indexOf(f);if(i<0)return;
+        var b=e.boundingClientRect,r=e.intersectionRect;
+        if(!e.isIntersecting||(f._v?r.height:r.width)<=0||(f._v?b.height:b.width)<=0){rs[i]=null;return}
+        // converte para pixels do próprio iframe (vale mesmo se o Canva aplicar escala)
+        var esc=f._s/(f._v?b.height:b.width);if(isFinite(esc)&&esc>0)VIS.k=1/esc;   // escala visual aplicada de fora (ex.: Canva)
+        rs[i]=f._v?{a:f._p+(r.top-b.top)*esc,b:f._p+(r.bottom-b.top)*esc}:{a:f._p+(r.left-b.left)*esc,b:f._p+(r.right-b.left)*esc};
+      });
+      applyVis();
+    },{threshold:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1]});
+    buildStrips();
+  }
+  var lastIH=window.innerHeight,lastIW=window.innerWidth;
+  window.addEventListener('resize',function(){if(window.innerHeight!==lastIH||window.innerWidth!==lastIW){lastIH=window.innerHeight;lastIW=window.innerWidth;buildStrips()}applyVis()});
+  ['fullscreenchange','webkitfullscreenchange'].forEach(function(ev){document.addEventListener(ev,function(){setTimeout(applyVis,60)})});
+  applyVis();
+  /* ---------- tudo cabe na janela: escala da interface + ajuste dos cartões ---------- */
   function uiScale(){
-    var w=window.innerWidth,h=window.innerHeight,b=document.body;
+    var k=(VIS.k>.2&&VIS.k<5)?VIS.k:1,w=VIS.w*k,h=VIS.h*k,b=document.body;   // tamanho real na tela do aparelho
     var s=Math.min(w/1280,h/720);
     if(b.classList.contains('touch'))s*=(h<480?1.45:1.22);           // telas de toque: um pouco maior para o dedo
     if(b.classList.contains('large-text'))s*=1.12;
-    s=Math.max(.55,Math.min(1.3,s));
+    s=Math.max(.55,Math.min(1.3,s))/k;
     root.style.fontSize=(16*s).toFixed(2)+'px';
   }
   function fitEl(el,maxW,maxH){
@@ -681,7 +748,7 @@ window.TechForgeBoot = { started:false, name:'', gender:'m', ready:false };
   }
   function fitAll(){
     uiScale();placeOptions();
-    var W=window.innerWidth,H=window.innerHeight;
+    var W=VIS.w,H=VIS.h;
     var mods=document.querySelectorAll('.modal.show');
     for(var i=0;i<mods.length;i++){var m=mods[i],c=m.firstElementChild,p=parseFloat(getComputedStyle(m).paddingTop)||8;if(c)fitEl(c,W-2*p,H-2*p)}
     var gs=document.getElementById('gameShell'),d=document.getElementById('dock'),sd=document.getElementById('side'),ht=document.getElementById('hudTop'),hb=document.getElementById('hudBottom');
